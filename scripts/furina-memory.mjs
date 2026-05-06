@@ -2,9 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+import { parseArgs, ensureDir, ROOT } from "./lib/utils.mjs";
 const SOUL_STATES = new Set(["low", "calm", "active", "excited"]);
 const INTERACTION_STATES = new Set(["not_present", "summoned", "getting_familiar", "observation"]);
 const SETTINGS = loadSettings();
@@ -58,6 +56,10 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function stableClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 function clamp(n, min, max) {
   const value = Number.isFinite(Number(n)) ? Number(n) : min;
   return Math.max(min, Math.min(max, value));
@@ -86,34 +88,6 @@ function loadSettings() {
   } catch {
     return {};
   }
-}
-
-function parseArgs(argv) {
-  const args = { _: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const part = argv[i];
-    if (!part.startsWith("--")) {
-      args._.push(part);
-      continue;
-    }
-    const key = part.slice(2);
-    const next = argv[i + 1];
-    if (next && !next.startsWith("--")) {
-      args[key] = next;
-      i += 1;
-    } else {
-      args[key] = true;
-    }
-  }
-  return args;
-}
-
-function ensureDir(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-}
-
-function stableClone(value) {
-  return JSON.parse(JSON.stringify(value));
 }
 
 function normalizeStore(input = {}) {

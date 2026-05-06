@@ -2,36 +2,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { parseArgs, expandHome, ROOT } from "./lib/utils.mjs";
 import { buildSearchIndex, loadSearchIndex, searchIndex } from "./furina-wiki-index.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CONFIG_PATH = path.join(ROOT, "config", "wiki_sources.json");
-
-function parseArgs(argv) {
-  const args = { _: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const part = argv[i];
-    if (!part.startsWith("--")) {
-      args._.push(part);
-      continue;
-    }
-    const eq = part.indexOf("=");
-    if (eq !== -1) {
-      args[part.slice(2, eq)] = part.slice(eq + 1);
-      continue;
-    }
-    const key = part.slice(2);
-    const next = argv[i + 1];
-    if (next && !next.startsWith("--")) {
-      args[key] = next;
-      i += 1;
-    } else {
-      args[key] = true;
-    }
-  }
-  return args;
-}
 
 function help() {
   return `Furina external wiki helper
@@ -57,13 +31,6 @@ Default:
   Uses online 原神WIKI_BWIKI. Pass --source genshin-story with GENSHIN_STORY_ROOT,
   --root, or a sibling genshinstory-cache checkout to force local cache lookup.
 `;
-}
-
-function expandHome(value) {
-  const text = String(value || "");
-  if (text === "~") return os.homedir();
-  if (text.startsWith("~/") || text.startsWith("~\\")) return path.join(os.homedir(), text.slice(2));
-  return text;
 }
 
 function resolveRoot(value) {

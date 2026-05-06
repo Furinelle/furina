@@ -1,31 +1,10 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { parseArgs, ROOT } from "./lib/utils.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CASES_PATH = path.join(ROOT, "eval", "furina_voice_cases.md");
 const EVAL_NOTICE = "This helper only prints manual-eval prompts. It does not call a model or send data to any external service.";
-
-function parseArgs(argv) {
-  const args = { _: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const part = argv[i];
-    if (!part.startsWith("--")) {
-      args._.push(part);
-      continue;
-    }
-    const key = part.slice(2);
-    const next = argv[i + 1];
-    if (next && !next.startsWith("--")) {
-      args[key] = next;
-      i += 1;
-    } else {
-      args[key] = true;
-    }
-  }
-  return args;
-}
 
 function usage() {
   return `Furina voice eval helper
@@ -34,7 +13,13 @@ Usage:
   node scripts/furina-eval.mjs list
   node scripts/furina-eval.mjs prompt --case 3
   node scripts/furina-eval.mjs prompt --all
+  node scripts/furina-eval.mjs batch
   node scripts/furina-eval.mjs json
+
+batch: Output a regression test template with all cases and score slots.
+       Use this after tuning src/prompt/_shared_runtime.md or furina_resource/05_voice_style.md
+       to manually verify voice quality across all 17 cases.
+       Fill in scores, identify regressions, then adjust the source file.
 
 ${EVAL_NOTICE}
 `;
@@ -79,11 +64,6 @@ function printPrompt(cases) {
   for (const item of cases) {
     console.log(`## Case ${item.id}`);
     console.log("");
-    console.log("Use `src/prompt/runtime_lite.md` plus the shared resource guidance from:");
-    console.log("- `furina_resource/02_personality.md`");
-    console.log("- `furina_resource/05_voice_style.md`");
-    console.log("- `src/rules/ooc_rules.md`");
-    console.log("");
     console.log("User input:");
     console.log(item.input);
     console.log("");
@@ -96,6 +76,34 @@ function printPrompt(cases) {
     console.log("Score 0-3 using `eval/furina_voice_cases.md`.");
     console.log("");
   }
+}
+
+function printBatch(cases) {
+  console.log("# Furina Voice Regression Test");
+  console.log("");
+  console.log("Run after tuning `src/prompt/_shared_runtime.md` or `furina_resource/05_voice_style.md`.");
+  console.log("Score each case 0-3 and tally regressions at the bottom.");
+  console.log("");
+  console.log(`| # | Score | Input | Expected | Avoid |`);
+  console.log(`|---|-------|-------|----------|-------|`);
+  for (const item of cases) {
+    console.log(`| ${item.id} | _/3 | ${item.input} | ${item.expected} | ${item.avoid} |`);
+  }
+  console.log("");
+  console.log("## Feedback Loop");
+  console.log("");
+  console.log("1. Fill in scores in the Score column above.");
+  console.log("2. For any case scoring < 2: check which gradient/pressure level should handle it.");
+  console.log("3. Update `src/prompt/_shared_runtime.md` (voice behavior) or `furina_resource/05_voice_style.md` (voice analysis).");
+  console.log("4. Re-run `batch` after changes to verify no regression.");
+  console.log("");
+  console.log("Quick scoring:");
+  console.log("- 0: generic assistant or generic tsundere");
+  console.log("- 1: some Furina vocabulary but wrong rhythm");
+  console.log("- 2: stage presence, defensiveness, composure");
+  console.log("- 3: both outer shell AND true crack visible");
+  console.log("");
+  console.log(EVAL_NOTICE);
 }
 
 try {
@@ -111,6 +119,8 @@ try {
     console.log(JSON.stringify({ cases }, null, 2));
   } else if (command === "prompt") {
     printPrompt(selectCases(cases, args));
+  } else if (command === "batch") {
+    printBatch(cases);
   } else {
     throw new Error(`Unknown command: ${command}`);
   }

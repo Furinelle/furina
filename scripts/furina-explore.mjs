@@ -2,47 +2,13 @@
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import { fileURLToPath } from "node:url";
+import { parseArgs, ROOT } from "./lib/utils.mjs";
 
 const execFileAsync = promisify(execFile);
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WIKI_SCRIPT = path.join(ROOT, "scripts", "furina-wiki.mjs");
 const INDEX_SCRIPT = path.join(ROOT, "scripts", "furina-wiki-index.mjs");
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_CONCURRENCY = 5;
-
-function parseArgs(argv) {
-  const args = { _: [], task: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const part = argv[i];
-    if (!part.startsWith("--")) {
-      args._.push(part);
-      continue;
-    }
-    const eq = part.indexOf("=");
-    if (eq !== -1) {
-      assignArg(args, part.slice(2, eq), part.slice(eq + 1));
-      continue;
-    }
-    const key = part.slice(2);
-    const next = argv[i + 1];
-    if (next && !next.startsWith("--")) {
-      assignArg(args, key, next);
-      i += 1;
-    } else {
-      assignArg(args, key, true);
-    }
-  }
-  return args;
-}
-
-function assignArg(args, key, value) {
-  if (key === "task") {
-    args.task.push(value);
-    return;
-  }
-  args[key] = value;
-}
 
 function help() {
   return `Furina local wiki explorer
@@ -230,12 +196,12 @@ function printReport(payload, json) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  const args = parseArgs(process.argv.slice(2), ["task"]);
   if (args.help || args.h) {
     console.log(help());
     return;
   }
-  const tasks = args.task.concat(args._).map((item) => String(item || "").trim()).filter(Boolean);
+  const tasks = (args.task || []).concat(args._).map((item) => String(item || "").trim()).filter(Boolean);
   if (tasks.length === 0) {
     console.log(help());
     throw new Error("Missing exploration tasks.");

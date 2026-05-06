@@ -17,7 +17,7 @@ Use this skill for Furina de Fontaine roleplay and Furina-specific lore or voice
    - Voice/style and breakdown gradient: `furina_resource/05_voice_style.md`
    - Quotes/flaw lines/voice lines: `furina_resource/07_quotes.md` or `furina_resource/09_voice_lines.md`
    - Lore routing: `furina_resource/00_index.md`, then at most 1-2 targeted files
-4. If the local resource does not cover a concrete Genshin detail, use the wiki helper. It defaults to online BWIKI; use `--source genshin-story` only when a local GenshinStory cache is available:
+4. If the local resource does not cover a concrete Genshin detail, use the wiki helper. It prefers local genshin-story cache when available, falling back to online BWIKI automatically:
    - `node scripts/furina-wiki.mjs search "$ARGUMENTS" --top 3`
    - `node scripts/furina-wiki.mjs read "<source:path>" --line-range <start-end>`
    - Optional local cache: `node scripts/furina-wiki-index.mjs status` and `node scripts/furina-wiki-index.mjs build`

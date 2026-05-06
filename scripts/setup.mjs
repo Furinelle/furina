@@ -2,36 +2,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { parseArgs, expandHome, resolveUserPath, ROOT } from "./lib/utils.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LEGACY_COMMANDS = ["furina.md", "furina-save.md", "furina-reflect.md", "furina-compress.md"];
 const CLAUDE_SKILLS = ["furina", "furina-save", "furina-reflect", "furina-compress"];
-
-function parseArgs(argv) {
-  const args = { _: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const part = argv[i];
-    if (!part.startsWith("--")) {
-      args._.push(part);
-      continue;
-    }
-    const eq = part.indexOf("=");
-    if (eq !== -1) {
-      args[part.slice(2, eq)] = part.slice(eq + 1);
-      continue;
-    }
-    const key = part.slice(2);
-    const next = argv[i + 1];
-    if (next && !next.startsWith("--")) {
-      args[key] = next;
-      i += 1;
-    } else {
-      args[key] = true;
-    }
-  }
-  return args;
-}
 
 function help() {
   return `Furina setup
@@ -53,19 +27,6 @@ Options:
   --codex-home <dir>     Override Codex home, defaults to CODEX_HOME or ~/.codex
   --memory-path <file>   Override memory JSON path
 `;
-}
-
-function expandHome(input) {
-  const value = String(input);
-  if (value === "~") return os.homedir();
-  if (value.startsWith("~/") || value.startsWith("~\\")) {
-    return path.join(os.homedir(), value.slice(2));
-  }
-  return value;
-}
-
-function resolveUserPath(input) {
-  return path.resolve(expandHome(input));
 }
 
 function ensureSource(filePath) {

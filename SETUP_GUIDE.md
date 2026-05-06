@@ -4,16 +4,16 @@
 
 ## 0. 分支定位
 
-本手册针对 `main` 分支。`main` 保持轻量，不再提交仓库内置 `vendor/GenshinStory` 快照；Furina 补查背景资料时默认查询在线 BWIKI，本地 GenshinStory 只是可选外部缓存。
+本手册针对 `main` 分支。`main` 保持轻量，不再提交仓库内置 `vendor/GenshinStory` 快照；Furina 补查背景资料时优先查询本地 genshinstory-cache，不可用时自动回退在线 BWIKI。
 
 | 项目 | `main` 分支 |
 |------|-------------|
-| 默认 wiki 策略 | `online-first-with-optional-local-cache` |
-| 默认在线来源 | 在线原神 BWIKI |
-| 可选本地来源 | 同级目录 `../genshinstory-cache`，或 `GENSHIN_STORY_ROOT` / `--root` 指定路径 |
+| 默认 wiki 策略 | `local-first-with-online-fallback` |
+| 默认来源 | 优先本地 genshinstory-cache，不可用时自动回退在线原神 BWIKI |
+| 可选本地来源 | 同级目录 `../genshinstory-cache`（`git clone https://github.com/Furinelle/genshinstory-cache`），或 `GENSHIN_STORY_ROOT` / `--root` 指定路径 |
 | 原神 Markdown 文档 | `<GenshinStory>/web/docs-site/public/domains/gi/docs` |
 | 搜索索引 | `.cache/furina-wiki/`，本地生成且不提交 |
-| 适合场景 | 轻量安装、在线补查、可选本地资料增强 |
+| 适合场景 | 轻量安装、可选本地缓存加速、在线自动回退 |
 
 因此，`main` 的安装检查只要求 Claude/Codex skill 和记忆运行时正常；本地 GenshinStory 缓存和索引属于可选增强。
 
@@ -52,22 +52,30 @@ node .\scripts\setup.mjs
 
 `furina_resource/` 不会被复制进 Codex Skill；它保留在仓库根目录，Claude Code、Codex 和其他运行时共用这一份资料。Codex Skill 只保存一个很小的路径上下文文件，用来找到这份共享资料库。
 
-外部原神 wiki 默认查询在线 BWIKI：
+外部原神 wiki 优先查询本地 genshinstory-cache（如果已安装），不可用时自动回退在线 BWIKI：
 
 ```powershell
 node .\scripts\furina-wiki.mjs sources
 node .\scripts\furina-wiki.mjs search "芙宁娜"
 ```
 
-如果想固定只用本地 GenshinStory，可显式指定来源：
+如果想固定只用在线 BWIKI，可显式指定来源：
 
 ```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜" --source genshin-story
+node .\scripts\furina-wiki.mjs search "芙宁娜" --source bwiki-online
 ```
 
-本地缓存默认查找同级目录 `../genshinstory-cache`。如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖；如果要固定只用在线 BWIKI，可传入 `--source bwiki-online`。没有使用外部 wiki 时，本 skill 仍会正常使用仓库根目录的 `furina_resource/`；外部 wiki 只作为补查来源。
+### 可选：安装本地 genshinstory-cache
 
-本地 GenshinStory 缓存可以放在同级目录 `../genshinstory-cache`，实际读取的原神 Markdown 位于 `<GenshinStory>/web/docs-site/public/domains/gi/docs`。分片索引会写入 `.cache/furina-wiki/`，用于加速本地搜索，不需要提交。复杂剧情或关系问题可用 `node .\scripts\furina-explore.mjs --task "子问题"` 拆成最多 5 路并行探索。
+本地缓存可大幅加速 wiki 查询并支持离线使用：
+
+```bash
+git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
+```
+
+安装后，wiki 查询自动优先使用本地索引。如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖。没有外部 wiki 时，本 skill 仍会正常使用仓库根目录的 `furina_resource/`；外部 wiki 只作为补查来源。
+
+本地 GenshinStory 缓存的实际读取路径为 `<GenshinStory>/web/docs-site/public/domains/gi/docs`。分片索引会写入 `.cache/furina-wiki/`，用于加速本地搜索，不需要提交。复杂剧情或关系问题可用 `node .\scripts\furina-explore.mjs --task "子问题"` 拆成最多 5 路并行探索。
 
 本分支的预期配置可以用下面两条确认：
 
@@ -76,7 +84,7 @@ node .\scripts\furina-wiki.mjs sources
 node .\scripts\furina-wiki-index.mjs status
 ```
 
-`sources` 应显示默认来源为 `bwiki-online`；只有准备了本地缓存并显式使用 `genshin-story` 时，索引状态才需要显示本地文档数量和 `fresh: true`。
+`sources` 应显示默认来源为 `genshin-story`，回退来源为 `bwiki-online`；安装了本地缓存后，索引状态应显示本地文档数量和 `fresh: true`。
 
 ## 3. 检查
 
@@ -104,8 +112,8 @@ node .\scripts\furina-wiki-index.mjs status
 
 期望结果：
 
-- 默认搜索和读取结果的 `source` 为 `bwiki-online`。
-- 如果 `Test-Path` 返回 `True`，可用 `--source genshin-story` 验证本地缓存。
+- 安装了本地缓存时，默认搜索和读取结果的 `source` 为 `genshin-story`；未安装时自动回退为 `bwiki-online`。
+- 如果 `Test-Path` 返回 `True`，说明本地缓存可用，搜索会自动优先使用。
 - `furina-wiki-index` 构建后显示 `fresh: true` 时，说明本地索引可用。
 - 本地搜索结果包含 `indexed: true` 时，说明正在使用 `.cache/furina-wiki/` 本地索引。
 

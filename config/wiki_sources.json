@@ -1,8 +1,8 @@
 {
-  "strategy": "online-first-with-optional-local-cache",
-  "default_source": "bwiki-online",
-  "fallback_source": null,
-  "fallback_when": "No automatic fallback by default. Use --source genshin-story with GENSHIN_STORY_ROOT, --root, or a sibling genshinstory-cache checkout for local cache lookup.",
+  "strategy": "local-first-with-online-fallback",
+  "default_source": "genshin-story",
+  "fallback_source": "bwiki-online",
+  "fallback_when": "优先使用本地 genshinstory-cache 快速搜索。本地缓存不可用时自动回退在线原神 BWIKI。显式传入 --source bwiki-online 可跳过本地直接在线查询。",
   "sources": [
     {
       "id": "bwiki-online",
