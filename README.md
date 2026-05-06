@@ -33,7 +33,7 @@ git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
 | Claude Code 角色扮演 | 项目内直接使用 `/furina 你好，芙宁娜。` |
 | Codex Skill | 让 Codex 按需读取芙宁娜设定、共享知识库、记忆规则和 OOC 规则 |
 | 资料库 / RAG | 直接使用 `furina_resource/` 中的结构化 Markdown |
-| 外部原神 wiki 查询 | 通过 `scripts/furina-wiki.mjs` 默认查询在线原神 BWIKI，也可显式使用本地 GenshinStory 缓存 |
+| 外部原神 wiki 查询 | 通过 `scripts/furina-wiki.mjs` 优先查询本地 GenshinStory 缓存，不可用时自动回退在线 BWIKI |
 | 自定义角色运行时 | 组合 `src/prompt/`、`src/rules/`、`src/memory/` 和 `scripts/furina-memory.mjs` |
 
 ## 快速开始
@@ -93,7 +93,7 @@ node .\scripts\setup.mjs --check
 | `node .\scripts\setup.mjs --dry-run` | 预览安装动作，不写文件 |
 | `node .\scripts\furina-eval.mjs list` | 列出语气验收用例 |
 | `node .\scripts\furina-eval.mjs prompt --case 3` | 生成单条语气验收提示 |
-| `node .\scripts\furina-eval.mjs batch` | 运行全部 17 个语气验收用例，生成评分模板 |
+| `node .\scripts\furina-eval.mjs batch` | 按当前用例表生成全量语气验收评分模板 |
 | `node .\scripts\furina-wiki.mjs sources` | 检查外部原神 wiki 来源 |
 | `node .\scripts\furina-wiki-index.mjs build` | 为可选本地 GenshinStory 缓存构建分片搜索索引 |
 | `node .\scripts\furina-wiki.mjs search "芙宁娜"` | 检索外部原神 wiki |
@@ -181,6 +181,7 @@ node .\scripts\furina-wiki.mjs search "芙宁娜 那维莱特" --source bwiki-on
 ```
 
 如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖。
+如果显式指定本地来源但缓存缺失，工具会在错误信息中给出可执行的恢复建议：克隆 `Furinelle/genshinstory-cache`、设置 `GENSHIN_STORY_ROOT` / `--root`，或改用 `--source bwiki-online`。
 
 复杂问题可拆成 1-5 个子问题并行探索；每个子任务会先搜索、再读取命中片段，并返回 evidence/references：
 
@@ -196,10 +197,10 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 |------|------|
 | `.claude/CLAUDE.md` | Claude Code 项目级说明，列出可用 skills 与维护原则 |
 | `.claude/skills/` | Claude Code 原生 project skills |
-| `claudecode/commands/` | 旧式 Claude Code 斜杠命令兼容模板 |
-| `codex/skills/furina-roleplay/` | 可安装的轻量 Codex Skill，不内置资料库镜像 |
+| `claudecode/commands/` | 旧式 Claude Code 斜杠命令兼容模板；行为以 `.claude/skills/furina/SKILL.md` 为准 |
+| `codex/skills/furina-roleplay/` | 可安装的轻量 Codex Skill；优先路由到仓库 `src/` 与 `furina_resource/`，`references/` 仅作安装后 fallback |
 | `furina_resource/` | 芙宁娜结构化知识库，所有平台共用的唯一资料源 |
-| `src/prompt/` | 角色系统提示词、共享运行时规范、轻量运行提示词、反思提示词 |
+| `src/prompt/` | 角色系统提示词、共享运行时规范、轻量运行提示词、反思提示词；`_shared_runtime.md` 是崩坏梯度、灵魂状态、反应公式和回复分寸的唯一运行时维护点 |
 | `src/rules/` | OOC、安全、角色一致性规则 |
 | `src/memory/` | 记忆格式、认知记忆机制、压缩规则 |
 | `scripts/setup.mjs` | 一键安装器 |
@@ -217,7 +218,7 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 
 - `config/manifest.json` 是项目元数据清单，供发布、索引或外部工具读取；`scripts/setup.mjs` 不依赖它执行安装。
 - `config/settings.json` 记录建议运行参数、外部 wiki 补查/索引/探索策略、记忆上限、主动回忆阈值、主动投喂阈值、睡眠巩固软目标/硬上限和 OOC 安全开关；`scripts/furina-memory.mjs` 会读取其中的关键记忆阈值，外部运行时也可以把它作为配置来源。
-- `config/wiki_sources.json` 由 `scripts/furina-wiki.mjs` 读取，用于配置默认在线 BWIKI 来源，以及可选本地 GenshinStory 缓存路径。
+- `config/wiki_sources.json` 由 `scripts/furina-wiki.mjs` 读取，用于配置本地 genshinstory-cache 优先、在线 BWIKI 回退，以及可选本地缓存路径。
 
 ## 知识库索引
 

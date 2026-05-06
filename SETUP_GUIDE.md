@@ -51,6 +51,7 @@ node .\scripts\setup.mjs
 仓库内还包含 `.claude/CLAUDE.md` 和 `.claude/skills/`，Claude Code 在本项目中打开时会读取项目说明，并自动发现 `/furina` 等原生 skills。
 
 `furina_resource/` 不会被复制进 Codex Skill；它保留在仓库根目录，Claude Code、Codex 和其他运行时共用这一份资料。Codex Skill 只保存一个很小的路径上下文文件，用来找到这份共享资料库。
+提示词、记忆和规则的维护入口是仓库根目录的 `src/`：Codex Skill 会优先读取 `src/prompt/`、`src/memory/` 和 `src/rules/`；安装后的 `references/` 只是仓库不可用时的 fallback，不应作为日常修改入口。
 
 外部原神 wiki 优先查询本地 genshinstory-cache（如果已安装），不可用时自动回退在线 BWIKI：
 
@@ -74,6 +75,7 @@ git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
 ```
 
 安装后，wiki 查询自动优先使用本地索引。如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖。没有外部 wiki 时，本 skill 仍会正常使用仓库根目录的 `furina_resource/`；外部 wiki 只作为补查来源。
+如果显式指定 `--source genshin-story` 但本地缓存缺失，`furina-wiki.mjs` 会提示克隆 `Furinelle/genshinstory-cache`、设置 `GENSHIN_STORY_ROOT` / `--root`，或改用 `--source bwiki-online`。
 
 本地 GenshinStory 缓存的实际读取路径为 `<GenshinStory>/web/docs-site/public/domains/gi/docs`。分片索引会写入 `.cache/furina-wiki/`，用于加速本地搜索，不需要提交。复杂剧情或关系问题可用 `node .\scripts\furina-explore.mjs --task "子问题"` 拆成最多 5 路并行探索。
 
@@ -199,7 +201,7 @@ node .\scripts\setup.mjs --check --codex
 使用 furina-roleplay skill。请查询“芙宁娜 传说任务”，返回前三条结果的 source 和 path；如果我已经提供了 GENSHIN_STORY_ROOT 或同级 genshinstory-cache，再额外说明本地缓存是否 indexed。
 ```
 
-正常情况下应返回 `source: bwiki-online`；只有显式指定 `--source genshin-story` 或配置了本地缓存时才使用本地结果。
+正常情况下会先尝试 `source: genshin-story`；如果没有本地缓存，会自动回退为 `source: bwiki-online`。固定只用在线来源时可显式传 `--source bwiki-online`。
 
 ## 8. 记忆文件
 
