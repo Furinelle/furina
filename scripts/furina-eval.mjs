@@ -6,7 +6,7 @@ import { parseArgs, ROOT } from "./lib/utils.mjs";
 const CASES_PATH = path.join(ROOT, "eval", "furina_voice_cases.md");
 const EVAL_NOTICE = "This helper only prints manual-eval prompts. It does not call a model or send data to any external service.";
 
-function usage() {
+function usage(caseCount) {
   return `Furina voice eval helper
 
 Usage:
@@ -18,7 +18,7 @@ Usage:
 
 batch: Output a regression test template with all cases and score slots.
        Use this after tuning src/prompt/_shared_runtime.md or furina_resource/05_voice_style.md
-       to manually verify voice quality across all 17 cases.
+       to manually verify voice quality across all ${caseCount} cases.
        Fill in scores, identify regressions, then adjust the source file.
 
 ${EVAL_NOTICE}
@@ -112,7 +112,7 @@ try {
   const cases = readCases();
 
   if (command === "help" || args.help || args.h) {
-    console.log(usage());
+    console.log(usage(cases.length));
   } else if (command === "list") {
     printList(cases);
   } else if (command === "json") {

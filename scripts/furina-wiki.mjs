@@ -28,8 +28,9 @@ Options:
   --json                Emit machine-readable JSON
 
 Default:
-  Uses online 原神WIKI_BWIKI. Pass --source genshin-story with GENSHIN_STORY_ROOT,
-  --root, or a sibling genshinstory-cache checkout to force local cache lookup.
+  Uses local genshinstory-cache first when available, then falls back to online 原神WIKI_BWIKI.
+  Pass --source bwiki-online to skip local cache, or set GENSHIN_STORY_ROOT / --root
+  / sibling ../genshinstory-cache to use local Markdown.
 `;
 }
 
@@ -188,13 +189,19 @@ function getFallbackSource(args, primarySource) {
   return getConfiguredSource(config, args, fallbackId);
 }
 
+function localCacheRecovery(source) {
+  const cloneTarget = source.root || "../genshinstory-cache";
+  const setup = `git clone https://github.com/Furinelle/genshinstory-cache ${cloneTarget}`;
+  return `本地缓存不可用。可运行 \`${setup}\`，或设置 ${source.env} / --root 指向已有缓存；也可改用 --source bwiki-online 直接查询在线 BWIKI。`;
+}
+
 function assertSourceReady(source) {
   if (source.type === "mediawiki_api") return;
   if (!source.root) {
-    throw new Error(`Source ${source.id} has no root. Set ${source.env} or pass --root.`);
+    throw new Error(`Source ${source.id} has no root. ${localCacheRecovery(source)}`);
   }
   if (!fs.existsSync(source.docsDir)) {
-    throw new Error(`Docs directory not found: ${source.docsDir}. Set ${source.env} or pass --root.`);
+    throw new Error(`Docs directory not found: ${source.docsDir}. ${localCacheRecovery(source)}`);
   }
 }
 
