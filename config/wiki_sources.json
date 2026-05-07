@@ -15,7 +15,7 @@
     {
       "id": "genshin-story",
       "type": "local_markdown",
-      "description": "Local clone of kawayiYokami/GenshinStory generated Genshin Impact Markdown docs.",
+      "description": "Local clone of Furinelle/genshinstory-cache generated Genshin Impact Markdown docs.",
       "cache_role": "optional-local-cache",
       "env": "GENSHIN_STORY_ROOT",
       "root": "../genshinstory-cache",

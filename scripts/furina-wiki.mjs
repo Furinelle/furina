@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { parseArgs, expandHome, ROOT } from "./lib/utils.mjs";
+import { parseArgs, expandHome, normalizeText, stripMarkdown, walkMarkdown, safeRelative, ROOT } from "./lib/utils.mjs";
 import { buildSearchIndex, loadSearchIndex, searchIndex } from "./furina-wiki-index.mjs";
 
 const CONFIG_PATH = path.join(ROOT, "config", "wiki_sources.json");
@@ -40,8 +40,12 @@ function resolveRoot(value) {
   return path.isAbsolute(expanded) ? expanded : path.resolve(ROOT, expanded);
 }
 
+let _configCache = null;
+
 function loadConfig() {
-  return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+  if (_configCache) return _configCache;
+  _configCache = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+  return _configCache;
 }
 
 function wikiUrl(source, title) {
@@ -57,7 +61,13 @@ function htmlToText(html) {
     .replace(/<[^>]+>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-  return decodeHtmlEntities(decodeHtmlEntities(stripped));
+  let decoded = stripped;
+  let prev = "";
+  while (decoded !== prev) {
+    prev = decoded;
+    decoded = decodeHtmlEntities(decoded);
+  }
+  return decoded;
 }
 
 function decodeHtmlEntities(text) {
@@ -104,24 +114,6 @@ async function fetchText(url) {
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
   return response.text();
-}
-
-function normalizeText(text) {
-  return String(text || "")
-    .toLowerCase()
-    .replace(/[\uff01-\uff5e]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
-    .replace(/\u3000/g, " ")
-    .trim();
-}
-
-function stripMarkdown(text) {
-  return String(text || "")
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_`|~-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function queryTerms(query) {
@@ -203,28 +195,6 @@ function assertSourceReady(source) {
   if (!fs.existsSync(source.docsDir)) {
     throw new Error(`Docs directory not found: ${source.docsDir}. ${localCacheRecovery(source)}`);
   }
-}
-
-function walkMarkdown(dir, results = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      walkMarkdown(fullPath, results);
-      continue;
-    }
-    if (entry.isFile() && entry.name.toLowerCase().endsWith(".md")) {
-      results.push(fullPath);
-    }
-  }
-  return results;
-}
-
-function safeRelative(root, target) {
-  const resolvedRoot = path.resolve(root);
-  const resolvedTarget = path.resolve(target);
-  const relative = path.relative(resolvedRoot, resolvedTarget);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) return null;
-  return relative.replace(/\\/g, "/");
 }
 
 function makeSnippets(content, terms, maxSnippets = 3) {

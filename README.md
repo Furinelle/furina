@@ -144,11 +144,19 @@ node .\scripts\furina-memory.mjs compress
 
 ## 外部原神 Wiki
 
-`scripts/furina-wiki.mjs` 用于按需查询芙宁娜资料库未覆盖的外部原神内容。采用 **本地优先 → 在线回退** 策略：
+`scripts/furina-wiki.mjs` 用于按需查询芙宁娜资料库未覆盖的外部原神内容。AI 回复时应严格遵循查询优先级：
 
-1. **角色扮演**: 先加载 prompt（`src/prompt/`）
-2. **芙宁娜相关信息**: 查询 `furina_resource/`
-3. **原神其他内容**: 优先本地 genshinstory-cache 快速搜索，不可用时自动回退在线 BWIKI
+```
+1. src/prompt/ (角色 Prompt — 人格与语气规范)
+   ↓ 需要芙宁娜相关资料时
+2. furina_resource/ (结构化知识库 — 角色设定、台词、FAQ)
+   ↓ 需要芙宁娜资料库未覆盖的原神内容时
+3. 本地 genshinstory-cache (可选安装，快速离线搜索)
+   ↓ 本地缓存不可用时自动回退
+4. wiki.biligame.com/ys (在线原神 BWIKI)
+```
+
+每次只读取少量命中片段，不要整篇塞进上下文。
 
 ### 可选：安装本地 genshinstory-cache
 
@@ -223,10 +231,12 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 | `scripts/furina-wiki.mjs` | 外部原神 wiki 查询工具 |
 | `scripts/furina-wiki-index.mjs` | 可选本地 GenshinStory 分片索引构建与查询工具 |
 | `scripts/furina-explore.mjs` | 最多 5 路并行外部 wiki 探索工具 |
+| `scripts/sync-references.mjs` | 将 `src/` 同步到 Codex Skill `references/` fallback |
 | `config/settings.json` | 运行参数、记忆阈值和安全开关的配置说明来源 |
 | `config/wiki_sources.json` | 外部 wiki 来源配置 |
-| `eval/furina_voice_cases.md` | 语气验收用例 |
 | `config/manifest.json` | 项目元数据 |
+| `eval/furina_voice_cases.md` | 语气验收用例 |
+| `tests/` | 记忆运行时单元测试 |
 
 ## 配置文件
 

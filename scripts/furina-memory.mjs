@@ -2,7 +2,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { parseArgs, ensureDir, ROOT } from "./lib/utils.mjs";
+import { pathToFileURL } from "node:url";
+import { parseArgs, ensureDir, resolveUserPath, ROOT } from "./lib/utils.mjs";
 const SOUL_STATES = new Set(["low", "calm", "active", "excited"]);
 const INTERACTION_STATES = new Set(["not_present", "summoned", "getting_familiar", "observation"]);
 const SETTINGS = loadSettings();
@@ -18,7 +19,7 @@ const PROACTIVE_RECALL_ENABLED = PROACTIVE_RECALL_SETTINGS.enabled !== false;
 const PROACTIVE_RECALL_MIN_INTIMACY = numberSetting(PROACTIVE_RECALL_SETTINGS.min_intimacy, 6);
 const CONSOLIDATION_TRIGGER = numberSetting(SLEEP_SETTINGS.trigger_pending_count, 8);
 
-const DEFAULT_STORE = {
+export const DEFAULT_STORE = {
   version: "2.0",
   scope: "default",
   intimacy: 0,
@@ -52,20 +53,20 @@ const TYPE_BY_HINT = [
   ["event", ["今天", "昨天", "上次", "曾", "分享", "发生"]]
 ];
 
-function today() {
+export function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function stableClone(value) {
+export function stableClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function clamp(n, min, max) {
+export function clamp(n, min, max) {
   const value = Number.isFinite(Number(n)) ? Number(n) : min;
   return Math.max(min, Math.min(max, value));
 }
 
-function normalizeSoulState(value) {
+export function normalizeSoulState(value) {
   if (SOUL_STATES.has(value)) return value;
   if (Number.isInteger(value)) return ["low", "calm", "active", "excited"][clamp(value, 0, 3)];
   return "calm";
@@ -90,7 +91,7 @@ function loadSettings() {
   }
 }
 
-function normalizeStore(input = {}) {
+export function normalizeStore(input = {}) {
   const store = { ...stableClone(DEFAULT_STORE), ...input };
   store.version = "2.0";
   store.scope = String(store.scope || "default");
@@ -114,7 +115,7 @@ function normalizeStore(input = {}) {
   return store;
 }
 
-function normalizeMemories(memories) {
+export function normalizeMemories(memories) {
   const used = new Set();
   let maxId = memories.reduce((max, memory) => Math.max(max, memoryIdNumber(memory?.id)), 0);
   const normalized = [];
@@ -134,7 +135,7 @@ function normalizeMemories(memories) {
   return normalized;
 }
 
-function normalizeMemory(memory) {
+export function normalizeMemory(memory) {
   if (!memory || typeof memory !== "object") return null;
   const content = cleanContent(memory.content || "");
   if (!content) return null;
@@ -153,16 +154,16 @@ function normalizeMemory(memory) {
   };
 }
 
-function memoryIdNumber(id) {
+export function memoryIdNumber(id) {
   const match = /^M(\d+)$/.exec(String(id || ""));
   return match ? Number(match[1]) : 0;
 }
 
-function formatMemoryId(value) {
+export function formatMemoryId(value) {
   return `M${String(value).padStart(3, "0")}`;
 }
 
-function normalizeNote(note, index = 0) {
+export function normalizeNote(note, index = 0) {
   if (typeof note === "string") {
     const content = cleanContent(note);
     return content ? { id: `N${String(index + 1).padStart(3, "0")}`, content, tags: [] } : null;
@@ -178,7 +179,7 @@ function normalizeNote(note, index = 0) {
   };
 }
 
-function uniqueStrings(values) {
+export function uniqueStrings(values) {
   const seen = new Set();
   const result = [];
   for (const value of values || []) {
@@ -190,31 +191,32 @@ function uniqueStrings(values) {
   return result;
 }
 
-function cleanContent(value) {
+export function cleanContent(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function inferType(content) {
+export function inferType(content) {
   for (const [type, hints] of TYPE_BY_HINT) {
     if (hints.some((hint) => content.includes(hint))) return type;
   }
   return "user";
 }
 
-function inferPriority(type, content) {
+export function inferPriority(type, content) {
   if (type === "boundary") return 3;
   if (/昵称|名字|称呼|不要忘|记住|信任|重要/.test(content)) return 3;
   if (type === "preference" || type === "emotion") return 2;
   return 1;
 }
 
-function defaultStrength(type) {
+export function defaultStrength(type) {
   return type === "boundary" ? 85 : type === "preference" || type === "emotion" ? 65 : 45;
 }
 
-function inferTags(type, content) {
+export function inferTags(type, content) {
   const tags = [type];
-  if (/甜点|蛋糕|歌剧|枫丹|游戏|代码|编程/.test(content)) tags.push(RegExp.lastMatch);
+  const topicHits = content.match(/甜点|蛋糕|歌剧|枫丹|游戏|代码|编程/g);
+  if (topicHits) tags.push(...new Set(topicHits));
   if (/称呼|昵称|名字/.test(content)) tags.push("称呼");
   if (/不要|避免|边界/.test(content)) tags.push("边界");
   if (/难过|低落|焦虑|开心|害怕/.test(content)) tags.push("情绪");
@@ -241,7 +243,7 @@ function nextMemoryId(store) {
   return formatMemoryId(max + 1);
 }
 
-function tokenSet(text) {
+export function tokenSet(text) {
   const normalized = cleanContent(text).toLowerCase();
   const words = normalized.match(/[a-z0-9_]+|[\u4e00-\u9fff]/g) || [];
   const tokens = new Set(words);
@@ -252,7 +254,7 @@ function tokenSet(text) {
   return tokens;
 }
 
-function overlapScore(query, memory) {
+export function overlapScore(query, memory) {
   const q = tokenSet(query);
   const m = tokenSet(`${memory.content} ${(memory.tags || []).join(" ")}`);
   if (!q.size || !m.size) return 0;
@@ -263,12 +265,12 @@ function overlapScore(query, memory) {
   return hit / Math.max(4, Math.min(q.size, m.size));
 }
 
-function isCasualGreeting(query) {
+export function isCasualGreeting(query) {
   const text = cleanContent(query).toLowerCase();
   return /^(你好|嗨|hi|hello|早|晚上好|在吗|芙宁娜[！!。.]?)$/.test(text);
 }
 
-function recall(store, query, options = {}) {
+export function recall(store, query, options = {}) {
   const topK = Number(options.topK || options["top-k"] || DEFAULT_RECALL_TOP_K);
   const minRelevance = Number(options.minRelevance || options["min-relevance"] || DEFAULT_MIN_RELEVANCE);
   if (options.avoidCasualGreeting !== false && isCasualGreeting(query)) return [];
@@ -288,7 +290,7 @@ function priorityLabel(priority) {
   return priority >= 3 ? "高" : priority === 2 ? "中" : "低";
 }
 
-function buildInjection(store, recalls = []) {
+export function buildInjection(store, recalls = []) {
   const lines = [
     "[认知存档]",
     "版本: 2.0",
@@ -353,7 +355,7 @@ function applyReflection(store, reflection) {
   return store;
 }
 
-function upsertMemory(store, memory) {
+export function upsertMemory(store, memory) {
   const existing = store.memories.find((item) => item.id === memory.id || similarContent(item.content, memory.content));
   if (!existing) {
     store.memories.push(memory);
@@ -368,13 +370,13 @@ function upsertMemory(store, memory) {
   existing.last_accessed = today();
 }
 
-function similarContent(a, b) {
+export function similarContent(a, b) {
   if (a === b) return true;
   if (a.includes(b) || b.includes(a)) return Math.min(a.length, b.length) >= 6;
   return overlapScore(a, { content: b, tags: [] }) > 0.65;
 }
 
-function updateProfileFromMemories(store) {
+export function updateProfileFromMemories(store) {
   for (const memory of store.memories) {
     if (memory.type === "boundary") store.profile.boundaries = uniqueStrings([...(store.profile.boundaries || []), memory.content]);
     if (memory.type === "preference") store.profile.style_preferences = uniqueStrings([...(store.profile.style_preferences || []), memory.content]);
@@ -383,7 +385,7 @@ function updateProfileFromMemories(store) {
   }
 }
 
-function compressStore(store) {
+export function compressStore(store) {
   const merged = [];
   for (const memory of store.memories.sort((a, b) => a.id.localeCompare(b.id))) {
     const target = merged.find((item) => similarContent(item.content, memory.content) || sharedTag(item, memory));
@@ -413,7 +415,7 @@ function sharedTag(a, b) {
   return (b.tags || []).some((tag) => aTags.has(tag) && !["user", "event", "emotion", "preference", "boundary"].includes(tag));
 }
 
-function parseMemoryTags(text) {
+export function parseMemoryTags(text) {
   const matches = [...String(text || "").matchAll(/\[📌\s*记忆:\s*([^\]]+)\]/g)];
   return matches.map((match) => ({
     type: inferType(match[1]),
@@ -425,7 +427,7 @@ function parseMemoryTags(text) {
   }));
 }
 
-function heart(text, store) {
+export function heart(text, store) {
   const message = cleanContent(text);
   const direct = /芙宁娜|furina|芙芙|大明星|你/.test(message);
   const question = /[?？]|吗|怎么|为什么|能不能|可不可以/.test(message);
@@ -486,7 +488,7 @@ Default path: %FURINA_MEMORY_PATH% or ~/.claude/furina-memory.json
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const command = args._[0] || "help";
-  const filePath = path.resolve(args.path || defaultPath());
+  const filePath = args.path ? resolveUserPath(args.path) : defaultPath();
 
   if (command === "help" || args.help) {
     usage();
@@ -578,9 +580,11 @@ function main() {
   process.exitCode = 1;
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error.message);
-  process.exitCode = 1;
+if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
 }

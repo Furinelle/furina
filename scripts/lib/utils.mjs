@@ -59,3 +59,43 @@ export function ensureDir(filePath) {
 export function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
+
+export function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[！-～]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(/　/g, " ")
+    .trim();
+}
+
+export function stripMarkdown(text) {
+  return String(text || "")
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[#>*_`|~-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function walkMarkdown(dir, results = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkMarkdown(fullPath, results);
+      continue;
+    }
+    if (entry.isFile() && entry.name.toLowerCase().endsWith(".md")) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+export function safeRelative(root, target) {
+  const resolvedRoot = path.resolve(root);
+  const resolvedTarget = path.resolve(target);
+  const relative = path.relative(resolvedRoot, resolvedTarget);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) return null;
+  return relative.replace(/\\/g, "/");
+}

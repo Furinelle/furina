@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { parseArgs, expandHome, ROOT } from "./lib/utils.mjs";
+import { parseArgs, expandHome, normalizeText, stripMarkdown, walkMarkdown, safeRelative, ROOT } from "./lib/utils.mjs";
 
 const CONFIG_PATH = path.join(ROOT, "config", "wiki_sources.json");
 const CACHE_DIR = path.join(ROOT, ".cache", "furina-wiki");
@@ -53,24 +53,6 @@ export function indexPathForSource(source) {
   return path.join(CACHE_DIR, `${slug(source.id)}-index`);
 }
 
-function normalizeText(text) {
-  return String(text || "")
-    .toLowerCase()
-    .replace(/[\uff01-\uff5e]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
-    .replace(/\u3000/g, " ")
-    .trim();
-}
-
-function stripMarkdown(text) {
-  return String(text || "")
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_`|~-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function termsFromText(text) {
   const normalized = normalizeText(stripMarkdown(text));
   const parts = normalized.match(/[\u4e00-\u9fff]+|[a-z0-9_]+/g) || [];
@@ -101,28 +83,6 @@ export function queryTerms(query) {
   }
   if (compact.length >= 2) terms.add(compact);
   return [...terms].filter(Boolean);
-}
-
-function walkMarkdown(dir, results = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      walkMarkdown(fullPath, results);
-      continue;
-    }
-    if (entry.isFile() && entry.name.toLowerCase().endsWith(".md")) {
-      results.push(fullPath);
-    }
-  }
-  return results;
-}
-
-function safeRelative(root, target) {
-  const resolvedRoot = path.resolve(root);
-  const resolvedTarget = path.resolve(target);
-  const relative = path.relative(resolvedRoot, resolvedTarget);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) return null;
-  return relative.replace(/\\/g, "/");
 }
 
 function addWeightedTerms(scoreMap, text, weight, capPerTerm) {
