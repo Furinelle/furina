@@ -1,0 +1,8 @@
+display_name: 芙宁娜角色扮演
+short_desc: 面向 AstrBot 的芙宁娜·德·枫丹角色扮演插件，与 Angel Heart / Angel Memory / LivingMemory 协作
+desc: |
+  提供芙宁娜·德·枫丹人格提示词、Angel Memory 知识卡与核心记忆导入包，
+  适配 Angel Heart 四状态回复策略和 LivingMemory 会话历史隔离。
+  安装后将 persona/furina-astrbot-persona.md 配置为"芙宁娜"人格的系统提示词即可使用。
+support_platforms: []
+astrbot_version: ">=4.0"

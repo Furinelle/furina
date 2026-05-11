@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import {
   buildAngelMemoryNotes,
@@ -9,6 +10,8 @@ import {
   buildAstrbotPersona,
   generateAstrbotPack
 } from "../scripts/furina-astrbot.mjs";
+
+const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "../..");
 
 describe("buildAstrbotPersona", () => {
   it("includes AstrBot plugin collaboration rules", () => {
@@ -26,7 +29,13 @@ describe("buildAstrbotPersona", () => {
 
     assert.match(persona, /普通寒暄不主动翻旧账/);
     assert.match(persona, /每轮最多.*1 条/);
-    assert.match(persona, /不要.*完整记忆库/);
+    assert.match(persona, /不把完整记忆库|完整记忆库.*塞进/);
+  });
+
+  it("is concise enough for AstrBot persona (under 100 lines)", () => {
+    const persona = buildAstrbotPersona();
+    const lines = persona.split(/\r?\n/);
+    assert.ok(lines.length < 100, `persona is too long: ${lines.length} lines`);
   });
 });
 
@@ -53,7 +62,7 @@ describe("buildAstrbotConfigExample", () => {
 });
 
 describe("generateAstrbotPack", () => {
-  it("writes a complete AstrBot adapter pack", () => {
+  it("writes a complete AstrBot adapter pack (generated files)", () => {
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), "furina-astrbot-"));
 
     generateAstrbotPack(outDir);
@@ -63,5 +72,31 @@ describe("generateAstrbotPack", () => {
     assert.ok(fs.existsSync(path.join(outDir, "angel_memory", "furina_core_memories.json")));
     assert.ok(fs.existsSync(path.join(outDir, "configs", "astrbot_plugins.example.json")));
     assert.ok(fs.existsSync(path.join(outDir, "README.md")));
+  });
+});
+
+describe("native AstrBot plugin files", () => {
+  it("metadata.yaml exists and contains required fields", () => {
+    const content = fs.readFileSync(path.join(REPO_ROOT, "astrbot", "metadata.yaml"), "utf8");
+    assert.match(content, /display_name/);
+    assert.match(content, /short_desc/);
+    assert.match(content, /astrbot_version/);
+  });
+
+  it("main.py exists and defines a Star subclass", () => {
+    const content = fs.readFileSync(path.join(REPO_ROOT, "astrbot", "main.py"), "utf8");
+    assert.match(content, /class \w+\(Star\)/);
+    assert.match(content, /async def terminate/);
+  });
+
+  it("skills/furina/SKILL.md exists", () => {
+    assert.ok(fs.existsSync(path.join(REPO_ROOT, "astrbot", "skills", "furina", "SKILL.md")));
+  });
+
+  it("_conf_schema.json is valid JSON with expected keys", () => {
+    const raw = fs.readFileSync(path.join(REPO_ROOT, "astrbot", "_conf_schema.json"), "utf8");
+    const schema = JSON.parse(raw);
+    assert.ok("persona_name" in schema);
+    assert.ok("angel_memory_scope" in schema);
   });
 });

@@ -1,0 +1,12 @@
+{
+  "persona_name": {
+    "description": "AstrBot 中对应的 persona 名称，需与 Angel Memory conversation_scope_map 保持一致",
+    "type": "string",
+    "default": "芙宁娜"
+  },
+  "angel_memory_scope": {
+    "description": "Angel Memory 的记忆范围键名（conversation_scope_map 的值）",
+    "type": "string",
+    "default": "furina"
+  }
+}
