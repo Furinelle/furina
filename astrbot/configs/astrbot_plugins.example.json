@@ -1,11 +1,29 @@
 {
+  "_comment": "本文件为 Angel Heart / Angel Memory / LivingMemory 的配置参考，对照 AstrBot 各插件的配置页面填入实际值。",
+
   "angel_heart": {
-    "persona_name": "芙宁娜",
-    "reply_policy": "use Angel Heart 4-state timing; keep direct private chat compatible"
+    "_comment": "在 AstrBot Dashboard → 插件 → angel_heart → 配置 中填入",
+    "analyzer_model": "YOUR_PROVIDER_ID/YOUR_CHEAP_MODEL",
+    "_analyzer_model_example": "deepseek/deepseek-v4-flash（用便宜快速的模型做秘书决策）",
+    "alias": "芙宁娜|Furina|水神",
+    "ai_self_identity": "你是枫丹水神芙宁娜，一个带有戏剧腔调的傲娇角色，表面高调自信，内心有五百年孤独的脆弱底色。",
+    "group_chat_enhancement": true,
+    "force_reply_when_summoned": true,
+    "strip_markdown_enabled": false,
+    "waiting_time": 7.0,
+    "no_reply_cooldown": 3.0
   },
+
   "angel_memory": {
+    "_comment": "在 AstrBot Dashboard → 插件 → angel_memory → 配置 中填入",
+    "provider_id": "YOUR_PROVIDER_ID/YOUR_MODEL",
+    "_provider_id_example": "deepseek/deepseek-v4-flash",
+    "retrieval": {
+      "embedding_provider_id": "YOUR_EMBEDDING_PROVIDER_ID",
+      "_embedding_provider_id_example": "gemini_embedding（在模型提供商页面配置的 Gemini Embedding ID）"
+    },
     "conversation_scope_map": {
-      "芙宁娜": "furina"
+      "furina-roleplay": "furina_default"
     },
     "memory_behavior": {
       "min_message_length": 5,
@@ -15,14 +33,50 @@
       "enabled": true,
       "recall_depth_mid": 7,
       "impression_depth_mid": 3,
-      "expression_desire_mid": 0.5,
+      "expression_desire_mid": 0.6,
       "creativity_mid": 0.7
     }
   },
+
   "livingmemory": {
-    "persona_isolation": true,
-    "session_isolation": true,
-    "proactive_tool": "recall_long_term_memory",
-    "recall_strategy": "use short keywords for memories, preferences, agreements, events, and boundaries"
+    "_comment": "在 AstrBot Dashboard → 插件 → livingmemory → 配置 中填入",
+    "provider_settings": {
+      "embedding_provider_id": "YOUR_EMBEDDING_PROVIDER_ID",
+      "_embedding_provider_id_example": "gemini_embedding",
+      "llm_provider_id": "YOUR_PROVIDER_ID/YOUR_MODEL",
+      "_llm_provider_id_example": "deepseek/deepseek-v4-flash"
+    },
+    "filtering_settings": {
+      "use_persona_filtering": true,
+      "use_session_filtering": false
+    },
+    "recall_engine": {
+      "injection_method": "system_prompt",
+      "_injection_method_note": "选 system_prompt 避免与 Angel Heart 的对话历史重写冲突",
+      "top_k": 5
+    },
+    "graph_memory": {
+      "enabled": true
+    },
+    "reflection_engine": {
+      "summary_trigger_rounds": 10
+    }
+  },
+
+  "astrbot_knowledge_base": {
+    "_comment": "在 AstrBot Dashboard → 知识库 中操作，不是插件配置，仅供参考",
+    "name": "furina resource",
+    "embedding_provider_id": "YOUR_EMBEDDING_PROVIDER_ID",
+    "recommended_files": [
+      "furina_resource/01_profile.md",
+      "furina_resource/02_personality.md",
+      "furina_resource/03_story_timeline.md",
+      "furina_resource/04_combat_mechanics.md",
+      "furina_resource/06_relationships.md",
+      "furina_resource/07_quotes.md",
+      "furina_resource/09_voice_lines.md",
+      "furina_resource/10_moegirl_supplement.md"
+    ],
+    "_note": "05_voice_style.md 建议内联到 Persona system prompt 而非放入知识库"
   }
 }
