@@ -6,3 +6,5 @@ node_modules/
 *.swp
 *.swo
 Thumbs.db
+.claude/settings.local.json
+.claude/skills/ui-ux-pro-max/
