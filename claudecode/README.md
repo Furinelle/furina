@@ -1,8 +1,9 @@
 # 芙宁娜 × Claude Code —— 安装与使用指南
 
-将芙宁娜的角色扮演能力适配为 Claude Code 原生 project skills，并保留旧式斜杠命令模板作为兼容入口。
+将芙宁娜的角色扮演能力适配为 Claude Code 原生 project skills。
 
-> [LEGACY] `claudecode/commands/` 只面向旧版 Claude Code 斜杠命令机制。新安装和日常使用优先使用仓库根目录 `.claude/skills/`，旧式命令仅在显式传入 `--legacy-commands` 时安装。
+> **`claudecode/commands/` 已删除。** 旧式斜杠命令入口已被 `.claude/skills/` 完全替代，不再维护。
+> 日常使用请直接通过 `.claude/skills/` 中的 skill 启动。
 
 ---
 
