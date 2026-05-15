@@ -33,4 +33,4 @@ node scripts/setup.mjs --claude
 - 外部原神 wiki 只用于补查资料库未覆盖的内容；优先本地 genshinstory-cache 快速搜索，不可用时自动回退在线 BWIKI。
 - Claude Code skills / commands 保留 `$ARGUMENTS`，让用户在斜杠命令后的文本能进入提示词。
 - 记忆读写优先使用 `scripts/furina-memory.mjs`，再回退到 `~/.claude/furina-memory.mjs`。
-- 修改 `src/prompt/` 或 `src/memory/` 后，运行 `node scripts/sync-references.mjs` 同步 `codex/skills/furina-roleplay/references/`；旧式 `claudecode/commands/` 只作为兼容入口，保持关键规则一致即可。
+- 修改 `src/prompt/` 或 `src/memory/` 后，运行 `node scripts/sync-references.mjs` 同步 `codex/skills/furina-roleplay/references/`。
