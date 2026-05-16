@@ -238,6 +238,21 @@ node .\scripts\setup.mjs --reset-memory
 
 ## 9. 常见问题
 
+### 在线 wiki 查询长时间没有响应
+
+`furina-wiki.mjs` 的在线请求（BWIKI）设有 10 秒超时；超时后若本地缓存可用会自动回退。如果频繁超时：
+
+1. 安装本地 genshinstory-cache（详见第 2 节），让大多数查询走本地。
+2. 或显式指定在线来源跳过本地逻辑：
+
+```powershell
+node .\scripts\furina-wiki.mjs search "芙宁娜" --source bwiki-online
+```
+
+如果命令立即报错（不是挂住），检查网络连通性和 BWIKI 可访问性。
+
+---
+
 ### `node` 命令不存在
 
 安装 Node.js，并重新打开终端后再试。

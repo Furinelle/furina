@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-05-16
+
+### Fixed
+- `furina-memory.mjs`：`similarContent` 子串包含长度阈值从 6 提高到 10，重叠分阈值从 0.65 提高到 0.68，减少短句误合并
+- `furina-wiki.mjs`：在线 BWIKI 请求（`fetchJson`/`fetchText`）加入 10 秒超时；超时自动回退本地缓存，不再永久挂起
+- `sync-references.mjs`：文件复制操作加入 try/catch，单个文件失败不再中断整批同步
+
+### Refactored
+- `furina-wiki.mjs`：移除本地 `queryTerms` 副本，改为从 `furina-wiki-index.mjs` 导入统一实现，消除代码重复
+- `furina-explore.mjs`：失败任务（`failed` / `timeout`）改为输出到 stderr，状态文本全大写，更易在日志中识别
+
+### Changed
+- `furina_resource/05_voice_style.md`：崩坏梯度表替换为指向 `src/prompt/_shared_runtime.md` 的链接，消除双重维护点；仅保留口吻轴 / 意象清单 / 场景模板等分析性内容
+- `src/memory/memory_format.md`：主动投喂部分补充"连续触发时至少跳过 2 轮"的频率约束，与认知记忆文档保持一致；soul_state 说明统一为"输出侧字符串 / 输入侧兼容整数"的完整表述
+- `src/prompt/reflection.md`：soul_state 规则加入 `src/memory/memory_format.md` 的交叉引用
+- `.claude/CLAUDE.md`：维护原则更新，指出崩坏梯度的唯一维护入口是 `src/prompt/_shared_runtime.md`
+
+### Docs
+- `README.md`：wiki 查询部分说明 10 秒超时行为；目录表修正 `claudecode/commands/` 已删除的状态
+- `SETUP_GUIDE.md`：第 9 节新增"在线 wiki 查询长时间没有响应"排障条目
+
 ## [1.12.0] - 2026-05-15
 
 ### Added

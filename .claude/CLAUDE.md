@@ -29,7 +29,7 @@ node scripts/setup.mjs --claude
 ## 维护原则
 
 - `furina_resource/` 是所有平台共用的唯一角色资料源。
-- 语气维护优先同步 `furina_resource/05_voice_style.md` 的崩坏梯度、`furina_resource/07_quotes.md` 的破绽句式，以及 `eval/furina_voice_cases.md` 的验收用例。
+- 语气维护的崩坏梯度（含正向例句）统一维护于 `src/prompt/_shared_runtime.md`；`furina_resource/05_voice_style.md` 仅保留分析性说明，不重复表格。破绽句式见 `furina_resource/07_quotes.md`，验收用例见 `eval/furina_voice_cases.md`。
 - 外部原神 wiki 只用于补查资料库未覆盖的内容；优先本地 genshinstory-cache 快速搜索，不可用时自动回退在线 BWIKI。
 - Claude Code skills / commands 保留 `$ARGUMENTS`，让用户在斜杠命令后的文本能进入提示词。
 - 记忆读写优先使用 `scripts/furina-memory.mjs`，再回退到 `~/.claude/furina-memory.mjs`。

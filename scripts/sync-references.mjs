@@ -32,9 +32,13 @@ function syncDir(srcDir, dstDir, dryRun) {
       synced.push(`would sync: ${src} -> ${dst}`);
       continue;
     }
-    fs.mkdirSync(path.dirname(dst), { recursive: true });
-    fs.copyFileSync(src, dst);
-    synced.push(`synced ${src} -> ${dst}`);
+    try {
+      fs.mkdirSync(path.dirname(dst), { recursive: true });
+      fs.copyFileSync(src, dst);
+      synced.push(`synced ${src} -> ${dst}`);
+    } catch (err) {
+      console.error(`failed to sync ${src} -> ${dst}: ${err.message}`);
+    }
   }
   return synced;
 }

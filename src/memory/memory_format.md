@@ -127,7 +127,9 @@
 
 ## 主动投喂
 
-普通寒暄不主动翻旧账。亲密度较高、气氛轻松且当前话题与旧记忆有轻微关联时，运行时的 `heart` 判断可能返回 `recall_mode: "proactive"`；这表示可以把 1 条旧记忆作为“顺带一提”的小细节带入回复。用户明确说“上次/以前/还记得”时属于 `recall_mode: "explicit"`，优先级高于主动投喂。
+普通寒暄不主动翻旧账。亲密度较高、气氛轻松且当前话题与旧记忆有轻微关联时，运行时的 `heart` 判断可能返回 `recall_mode: “proactive”`；这表示可以把 1 条旧记忆作为”顺带一提”的小细节带入回复。用户明确说”上次/以前/还记得”时属于 `recall_mode: “explicit”`，优先级高于主动投喂。
+
+**投喂频率约束**：最近几轮已主动提过旧记忆时，应暂停主动投喂，避免用户产生被监视感。连续触发 `proactive` 时，至少跳过 2 轮再次投喂。
 
 ---
 
@@ -178,7 +180,7 @@
 1. 每轮对话结束后，若出现候选记忆、告别、用户要求保存或待处理数达到阈值，调用 `src/prompt/reflection.md`。
 2. 解析输出的 JSON，按如下规则更新存档：
    - `intimacy_delta` -> 累加到亲密度（上下限 0-10）
-   - `soul_state` -> `low` / `calm` / `active` / `excited`；旧版整数 `0-3` 仅作兼容输入，运行时会规范化为字符串
+   - `soul_state` -> 输出侧始终使用字符串 `low` / `calm` / `active` / `excited`；输入侧兼容旧版整数 `0-3`，运行时自动规范化为字符串（详见 `src/prompt/reflection.md`）
    - `interaction_state` -> 更新下轮默认交互状态
    - `soul_energy_delta` -> 更新四个能量槽（上下限 0-100）
    - `new_memories` -> 追加到关键记忆列表（按 ID 递增），记录 `priority`、`strength`、`confidence`、`tags`

@@ -88,7 +88,7 @@
 6. **隐私克制**：医疗、财务、身份敏感信息只有在用户明确要求“记住”时才保存，并降低注入频率。
 7. **成本控制**：若本轮无值得保存的信息，输出空数组并保持 `compression_needed=false`。
 8. **社交状态**：回复后通常进入 `observation`；用户直接呼唤或提问时可设 `summoned`；轻松连续闲聊但气氛合适时可设 `getting_familiar`。
-9. **灵魂状态类型**：`soul_state` 输出字符串 `low` / `calm` / `active` / `excited`；旧版整数只作为运行时兼容，不要主动输出整数。
+9. **灵魂状态类型**：`soul_state` 输出字符串 `low` / `calm` / `active` / `excited`；旧版整数只作为运行时兼容输入，不要主动输出整数（规范化规则见 `src/memory/memory_format.md`）。
 
 ### 禁止
 

@@ -372,8 +372,8 @@ export function upsertMemory(store, memory) {
 
 export function similarContent(a, b) {
   if (a === b) return true;
-  if (a.includes(b) || b.includes(a)) return Math.min(a.length, b.length) >= 6;
-  return overlapScore(a, { content: b, tags: [] }) > 0.65;
+  if (a.includes(b) || b.includes(a)) return Math.min(a.length, b.length) >= 10;
+  return overlapScore(a, { content: b, tags: [] }) > 0.68;
 }
 
 export function updateProfileFromMemories(store) {

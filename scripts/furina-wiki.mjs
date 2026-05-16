@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs, expandHome, normalizeText, stripMarkdown, walkMarkdown, safeRelative, ROOT } from "./lib/utils.mjs";
-import { buildSearchIndex, loadSearchIndex, searchIndex } from "./furina-wiki-index.mjs";
+import { buildSearchIndex, loadSearchIndex, searchIndex, queryTerms } from "./furina-wiki-index.mjs";
 
 const CONFIG_PATH = path.join(ROOT, "config", "wiki_sources.json");
 
@@ -94,40 +94,42 @@ function decodeHtmlEntities(text) {
   });
 }
 
+const FETCH_TIMEOUT_MS = 10_000;
+
 async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent": "furina-wiki/1.0",
-      "accept": "application/json,text/plain,*/*"
-    }
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-  return response.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "user-agent": "furina-wiki/1.0",
+        "accept": "application/json,text/plain,*/*"
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
+    return response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent": "furina-wiki/1.0",
-      "accept": "text/html,text/plain,*/*"
-    }
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-  return response.text();
-}
-
-function queryTerms(query) {
-  const normalized = normalizeText(query);
-  const compact = normalized.replace(/\s+/g, "");
-  const terms = new Set(normalized.split(/\s+/).filter(Boolean));
-  if (compact && compact !== normalized) terms.add(compact);
-
-  if (/[\u4e00-\u9fff]/.test(compact) && compact.length > 2) {
-    for (let i = 0; i < compact.length - 1; i += 1) {
-      terms.add(compact.slice(i, i + 2));
-    }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "user-agent": "furina-wiki/1.0",
+        "accept": "text/html,text/plain,*/*"
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
+    return response.text();
+  } finally {
+    clearTimeout(timer);
   }
-  return [...terms].filter((term) => term.length > 0);
 }
 
 function countOccurrences(text, term) {

@@ -213,13 +213,15 @@ node .\scripts\furina-explore.mjs --task "芙宁娜 传说任务" --task "芙宁
 
 AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 genshinstory-cache → 在线 BWIKI；每次只读取少量命中片段。
 
+在线 BWIKI 请求设有 **10 秒超时**；超时后会自动回退到本地缓存，本地也不可用时抛出错误。若在线响应不稳定，建议安装本地 genshinstory-cache 或传入 `--source bwiki-online --no-fallback` 明确限定来源。
+
 ## 目录说明
 
 | 路径 | 内容 |
 |------|------|
 | `.claude/CLAUDE.md` | Claude Code 项目级说明，列出可用 skills 与维护原则 |
 | `.claude/skills/` | Claude Code 原生 project skills |
-| `claudecode/commands/` | 旧式 Claude Code 斜杠命令兼容模板；行为以 `.claude/skills/furina/SKILL.md` 为准 |
+| `claudecode/` | 旧式 Claude Code 斜杠命令兼容模板目录（commands/ 已删除，功能由 `.claude/skills/` 替代） |
 | `codex/skills/furina-roleplay/` | 可安装的轻量 Codex Skill；优先路由到仓库 `src/` 与 `furina_resource/`，`references/` 仅作安装后 fallback |
 | `furina_resource/` | 芙宁娜结构化知识库，所有平台共用的唯一资料源 |
 | `src/prompt/` | 角色系统提示词、共享运行时规范、轻量运行提示词、反思提示词；`_shared_runtime.md` 是崩坏梯度、灵魂状态、反应公式和回复分寸的唯一运行时维护点 |

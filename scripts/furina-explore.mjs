@@ -183,14 +183,16 @@ function printReport(payload, json) {
   }
   console.log(`Furina explore completed: ${payload.completed}/${payload.taskCount}`);
   for (const [index, report] of payload.reports.entries()) {
-    console.log("");
-    console.log(`${index + 1}. [${report.status}] ${report.task}`);
-    console.log(`   confidence: ${report.confidence}, elapsedMs: ${report.elapsedMs}`);
-    console.log(`   summary: ${report.summary}`);
+    const failed = report.status === "failed" || report.status === "timeout";
+    const log = failed ? console.error.bind(console) : console.log.bind(console);
+    log("");
+    log(`${index + 1}. [${report.status.toUpperCase()}] ${report.task}`);
+    log(`   confidence: ${report.confidence}, elapsedMs: ${report.elapsedMs}`);
+    log(`   summary: ${report.summary}`);
     for (const item of report.evidence.slice(0, 3)) {
-      console.log(`   - ${item.source}`);
-      if (item.excerpt) console.log(`     ${item.excerpt}`);
-      if (item.error) console.log(`     error: ${item.error}`);
+      log(`   - ${item.source}`);
+      if (item.excerpt) log(`     ${item.excerpt}`);
+      if (item.error) log(`     error: ${item.error}`);
     }
   }
 }
