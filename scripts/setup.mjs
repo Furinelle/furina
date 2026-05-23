@@ -146,8 +146,15 @@ function installCodex(paths, dryRun) {
     {
       repo_root: ROOT,
       furina_resource: path.join(ROOT, "furina_resource"),
+      furina_resource_index: path.join(ROOT, "furina_resource", "00_index.md"),
+      voice_style: path.join(ROOT, "furina_resource", "05_voice_style.md"),
+      sensitive_topics: path.join(ROOT, "furina_resource", "11_sensitive_topics.md"),
+      shared_runtime: path.join(ROOT, "src", "prompt", "_shared_runtime.md"),
+      voice_eval_cases: path.join(ROOT, "eval", "furina_voice_cases.md"),
       memory_runtime: path.join(ROOT, "scripts", "furina-memory.mjs"),
       wiki_runtime: path.join(ROOT, "scripts", "furina-wiki.mjs"),
+      explore_runtime: path.join(ROOT, "scripts", "furina-explore.mjs"),
+      sync_references_runtime: path.join(ROOT, "scripts", "sync-references.mjs"),
       generated_by: "scripts/setup.mjs"
     },
     "Codex install context",

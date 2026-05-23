@@ -6,7 +6,9 @@ import { ROOT } from "./lib/utils.mjs";
 const MAPPINGS = [
   ["src/memory", "codex/skills/furina-roleplay/references/memory"],
   ["src/prompt", "codex/skills/furina-roleplay/references/prompt"],
-  ["src/rules", "codex/skills/furina-roleplay/references/rules"]
+  ["src/rules", "codex/skills/furina-roleplay/references/rules"],
+  ["furina_resource", "codex/skills/furina-roleplay/references/furina_resource"],
+  ["eval", "codex/skills/furina-roleplay/references/eval"]
 ];
 
 function syncDir(srcDir, dstDir, dryRun) {

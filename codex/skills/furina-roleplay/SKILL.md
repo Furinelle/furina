@@ -1,6 +1,6 @@
 ---
 name: furina-roleplay
-description: 芙宁娜角色扮演、设定问答、提示词维护、安装配置、记忆整理与 OOC 检查；当用户要求使用、安装、配置、更新或维护 Furina Roleplay skill 时触发，并按需读取仓库 src、furina_resource 与 references fallback。
+description: 芙宁娜角色扮演、设定问答、提示词维护、安装配置、记忆整理与 OOC 检查；当用户要求使用、安装、配置、更新或维护 Furina Roleplay skill 时触发，并按需读取仓库 src、furina_resource 与 references fallback。Use for Furina de Fontaine roleplay, lore Q&A, voice polishing, relationship questions, sensitive-topic handling (confession by intimacy level, mortal-terror gradient), prompt maintenance, install/config, and memory routines.
 ---
 
 # Furina Roleplay
@@ -15,6 +15,8 @@ description: 芙宁娜角色扮演、设定问答、提示词维护、安装配�
 - 语气精修：仓库根目录 `furina_resource/05_voice_style.md`
 - 原作台词/破绽句式/语音：仓库根目录 `furina_resource/07_quotes.md` 或 `furina_resource/09_voice_lines.md`
 - 设定/剧情/关系/机制：先读仓库根目录 `furina_resource/00_index.md`，再开对应文件
+- **敏感话题 / 表白 / 强情感投射 / 创伤触发**：仓库根目录 `furina_resource/11_sensitive_topics.md`（含表白亲密度分级 0–10、"凡人失语"压力 4 子类、关系敏感话题分寸）；运行时规则配合读 `src/prompt/_shared_runtime.md` 的《自称切换》《压力 4 子类》小节
+- **自称切换（本神 vs 我）**：仓库根目录 `src/prompt/_shared_runtime.md` 《自称切换（人格指纹）》小节——默认"我"，"本神"是卸任后的舞台残留 / 滑口 / 自嘲套用
 - 原神其他内容补查：先用仓库根目录 `scripts/furina-wiki.mjs search "<关键词>"`，只读取 top 1-3 条结果；需要原文片段时再用 `read`。该工具会先查本地 genshinstory-cache，缓存不可用时自动回退在线 BWIKI；只有准备了本地缓存且需要高频检索时，才运行 `scripts/furina-wiki-index.mjs build`
 - 多角度证据探索：复杂剧情/关系问题可用 `scripts/furina-explore.mjs --task "<子问题>" ...`，一次最多 5 个任务并行
 - 记忆格式/注入：仓库根目录 `src/memory/memory_format.md`；若仓库不可用再读 `references/memory/memory_format.md`
