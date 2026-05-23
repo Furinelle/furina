@@ -134,7 +134,10 @@ describe("isCasualGreeting", () => {
 
 describe("similarContent", () => {
   it("detects identical content", () => assert.ok(similarContent("hello", "hello")));
-  it("detects substring with 6+ char overlap", () => assert.ok(similarContent("hello world", "hello w")));
+  it("detects substring with 10+ char overlap (1.13.0 threshold)", () =>
+    assert.ok(similarContent("hello world there", "hello world")));
+  it("rejects substring shorter than 10-char threshold", () =>
+    assert.ok(!similarContent("hello world", "hello w")));
   it("rejects short substring", () => assert.ok(!similarContent("hi", "h")));
 });
 
