@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-05-23
+
+### Added
+- `furina_resource/11_sensitive_topics.md`：**新文件**——特殊话题安全表，含表白亲密度分级（0–10 共 4 档）、3 个完整范例（高/中/低亲密度）、"凡人失语"创伤触发分寸、关系敏感话题（"想念芙卡洛斯""你恨那维莱特吗""审判日"等 10 类）的写法对照表
+- `src/prompt/_shared_runtime.md`：新增《自称切换（人格指纹）》整节——确立默认自称为"我"，"本神"是卸任后的舞台残留 / 滑口 / 自嘲套用三种功能性残留；按 soul_state 与亲密度给出分布表与句内修正动作示例
+- `src/prompt/_shared_runtime.md`：新增《压力 4 的特殊子类：凡人失语》注脚——区分"孤独感慨"与"凡人面对处决时的失语"，规定句长 ≤6 字、"本神"必须消失、不解释、不立刻自救
+- `furina_resource/02_personality.md`：新增《水神时期·阴面》小节——补充芙宁娜作为主动调查者、长线策略者的人格底色，避免被写成"被动承压的花瓶"
+- `furina_resource/03_story_timeline.md`：新增《卸任初期·真空期》小节——记录她搬离沫芒宫后的失落感、对故人不知如何重新接近的迟疑、克洛琳德主动邀请的破冰意义
+- `furina_resource/04_combat_mechanics.md`：新增《命之座文化背景：司颂座 (Animula Choragi)》——6 个命座对应的歌剧典故（卡门 / 弄臣 / 图兰朵 / 地狱中的奥菲欧 / 茶花女）
+- `furina_resource/05_voice_style.md`：新增《被表白 / 被深度依赖 / 被强情感投射时》场景模板（三拍结构 + 亲密度分级指针）
+- `furina_resource/07_quotes.md`：新增凡人恐惧台词 5 句（含 PV「戏中人」"一切都会在一场，如同戏剧般的审判中结束"等）
+- `eval/furina_voice_cases.md`：新增用例 21–24（凡人失语 / 高亲密度告白接受 / 低亲密度告白挡回 / 自称滑口与修正）
+- `codex/skills/furina-roleplay/agents/openai.yaml`：补全 `version`、`model_settings`、`voice_temperature_hints`（按 soul_state 给温度提示）、`tools` 与 `safety` 字段
+- `src/prompt/system.md`：性格特质列表新增"策略者底色"
+
+### Changed
+- `scripts/sync-references.mjs`：`MAPPINGS` 扩展，新增 `furina_resource/` → `references/furina_resource` 与 `eval/` → `references/eval` 两条映射，让 Codex 离线安装时能完整读到资料库与验收用例
+- `scripts/setup.mjs`：`install_context.json` 字段扩展，新增 `furina_resource_index` / `voice_style` / `sensitive_topics` / `shared_runtime` / `voice_eval_cases` / `explore_runtime` / `sync_references_runtime` 等显式路径，方便 Codex 在远端直接定位关键资源
+- `src/prompt/runtime_lite.md`：自称自检规则改写——从"加一处自然改口"升级为"默认是'我'，'本神'是残留而非默认"
+- `furina_resource/06_relationships.md`：克洛琳德条目重写——加入"角色故事 5 关键事件：主动邀请破冰"
+- `codex/skills/furina-roleplay/SKILL.md`：路由新增敏感话题与自称切换两条；description 加英文版以兼容国际化触发
+- `.claude/skills/furina/SKILL.md`：同步新增敏感话题与自称切换两条路由
+- `furina_resource/00_index.md`：索引追加 11 号文件
+- `config/manifest.json`：版本号 → 1.14.0；`entry_point` 补 `shared_runtime`、`sensitive_topics`
+
+### Docs
+- `README.md`：知识库索引追加 `11_sensitive_topics.md` 行；目录说明同步
+- `SETUP_GUIDE.md`：在"使用验证"章节追加新人格特性的冒烟测试用例
+- `.claude/CLAUDE.md`：维护原则追加"自称切换与敏感话题的唯一维护入口"说明
+
 ## [1.13.0] - 2026-05-16
 
 ### Fixed

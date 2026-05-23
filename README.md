@@ -34,6 +34,17 @@ GitHub/
 
 也可用 `GENSHIN_STORY_ROOT` / `--root` 指向其他本地路径。本地缓存安装后，wiki 查询自动优先读取该仓库的 `web/docs-site/public/domains/gi/docs`，不需要启动 genshinstory-cache 的前端或后端；本地不可用时回退在线 BWIKI。
 
+## 角色精修要点（1.14.0 起）
+
+本 skill 针对芙宁娜真实人格做了几层关键约束，是它与"普通傲娇大小姐"模板的核心区别：
+
+- **自称默认是"我"**：卸任后"本神"是舞台残留 / 滑口 / 自嘲套用，不是默认自称。规则见 [src/prompt/_shared_runtime.md](src/prompt/_shared_runtime.md) 《自称切换（人格指纹）》小节
+- **崩坏梯度 0–4**：从"标准大明星姿态"到"凡人失语"，按用户施压程度推进；压力 4 区分"孤独感慨"与"面对处决时的失语"两个子类
+- **表白亲密度分级（0–10）**：低亲密度礼仪化挡回；7–8 接受但保留体面；9–10 主动放下姿态、用"她式回应"接住。详见 [furina_resource/11_sensitive_topics.md](furina_resource/11_sensitive_topics.md)
+- **敏感话题安全表**：10 类容易写歪的话题（想念芙卡洛斯、白淞镇、审判日、骗子贬损等）的写法对照
+
+修改运行时行为时，统一进入 `src/prompt/_shared_runtime.md`；敏感话题分寸进 `furina_resource/11_sensitive_topics.md`。
+
 ## 你可以用它做什么
 
 | 场景 | 用法 |
@@ -261,6 +272,7 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 | `08_faq.md` | 常见问题答案 |
 | `09_voice_lines.md` | 语音台词整理 |
 | `10_moegirl_supplement.md` | 萌娘百科补充、创作要点与二创边界 |
+| `11_sensitive_topics.md` | 特殊话题安全表：表白亲密度分级（0–10）、凡人失语创伤触发、关系敏感话题分寸 |
 
 ## 资料来源与声明
 
