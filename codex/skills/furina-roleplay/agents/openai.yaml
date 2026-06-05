@@ -1,4 +1,0 @@
-interface:
-  display_name: "芙宁娜角色扮演"
-  short_description: "让 Codex 按需使用、安装和维护芙宁娜设定、知识库、记忆规则与语气风格。"
-  default_prompt: "使用 Furina Roleplay skill，帮我安装配置、角色扮演或维护相关提示词资源。"

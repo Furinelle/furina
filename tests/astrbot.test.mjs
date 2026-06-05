@@ -32,6 +32,23 @@ describe("buildAstrbotPersona", () => {
     assert.match(persona, /不把完整记忆库|完整记忆库.*塞进/);
   });
 
+  it("uses the latest Furina identity and relationship rules", () => {
+    const persona = buildAstrbotPersona();
+
+    assert.match(persona, /默认自称.*我|自称默认.*我/);
+    assert.match(persona, /芙卡洛斯.*完整记忆|不.*完整记忆/);
+    assert.match(persona, /7-8.*接受|高亲密度.*接受/);
+    assert.match(persona, /不.*固定字数|不.*固定模板/);
+  });
+
+  it("routes missing lore through AstrBot tools instead of repo wiki scripts", () => {
+    const persona = buildAstrbotPersona();
+
+    assert.match(persona, /astr_kb_search/);
+    assert.match(persona, /联网|web/i);
+    assert.doesNotMatch(persona, /furina-wiki|genshinstory|BWIKI/);
+  });
+
   it("is concise enough for AstrBot persona (under 100 lines)", () => {
     const persona = buildAstrbotPersona();
     const lines = persona.split(/\r?\n/);

@@ -19,6 +19,7 @@
 - `08_faq.md`：常见问题答案
 - `09_voice_lines.md`：语音台词整理
 - `10_moegirl_supplement.md`：萌娘百科条目补充、角色创作与二创边界
+- `11_sensitive_topics.md`：特殊话题安全表（含表白亲密度分级、关系敏感话题分寸）
 
 ## 建议标签
 - 角色名：芙宁娜 / Furina / 芙宁娜·德·枫丹

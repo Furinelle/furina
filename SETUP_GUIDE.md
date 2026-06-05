@@ -1,155 +1,120 @@
-# AstrBot 部署手册
+# AstrBot 安装与配置手册
 
-本手册针对 `feat/astrbot-adapter` 分支，仅覆盖 AstrBot 平台的部署与排障。Claude Code / Codex 版本请切换到 `main` 分支并查阅该分支的 SETUP_GUIDE.md。
+本手册只适用于 `feat/astrbot-adapter`。
 
-完整部署流程的权威参考是 [astrbot/README.md](astrbot/README.md)，本文件为补充性快速索引。
+## 1. 环境
 
----
-
-## 1. 环境要求
-
-- AstrBot v4.24.2+，Docker 部署
-- 已安装三个插件（安装顺序不能颠倒）：
-  1. `astrbot_plugin_angel_heart`
-  2. `astrbot_plugin_angel_memory`（依赖 angel_heart）
-  3. `astrbot_plugin_livingmemory`
-- Node.js 18+（用于本地生成适配包）
+- AstrBot，支持 Skills、Persona 与知识库
+- Node.js 18+，仅用于生成和检查适配包
+- 推荐安装 Angel Heart、Angel Memory、LivingMemory
 
 ## 2. 生成适配包
 
-```powershell
-node .\scripts\furina-astrbot.mjs generate --out astrbot
-node .\scripts\furina-astrbot.mjs check --out astrbot
-```
-
-`main.py`、`metadata.yaml`、`_conf_schema.json`、`skills/` 是静态文件，`generate` 不会覆盖它们；`persona/` 和 `angel_memory/` 会从 `src/prompt/` 重新生成。
-
-## 3. 安装后配置
-
-### 安装 tantivy
-
 ```bash
-docker exec astrbot pip install tantivy
-docker restart astrbot
+node scripts/furina-astrbot.mjs generate --out astrbot
+node scripts/furina-astrbot.mjs check --out astrbot
 ```
 
-### 配置 Embedding 提供商
+生成器更新 Persona、Angel Memory 卡片、核心记忆和配置示例，不覆盖
+`main.py`、`metadata.yaml`、`_conf_schema.json` 与 Skill。
 
-Dashboard → 模型提供商 → 新增，推荐 Gemini Embedding（免费）：
+## 3. 安装 Skill 与 Persona
 
-| 字段 | 值 |
-|------|----|
-| 类型 | Gemini Embedding |
-| ID | `gemini_embedding` |
-| 模型名称 | `gemini-embedding-2` |
-| 向量维度 | `768` |
+1. 将 `astrbot/skills/furina/` 打包并在 Dashboard 的 Skills 页面上传。
+2. 新建 Persona `芙宁娜`。
+3. 将 `astrbot/persona/furina-astrbot-persona.md` 全文设为 System Prompt。
+4. 给 Persona 选择 `furina-roleplay` Skill。
+5. 将机器人默认 Persona 切换为 `芙宁娜`。
 
-> ⚠️ **已知 Bug**：AstrBot v4.24.2 的 Gemini Embedding 批量接口与 `gemini-embedding-2` 不兼容，需手动修复 `get_embeddings` 方法改为逐条请求。
-> 详见 [astrbot/README.md](astrbot/README.md) 和 [issue #8150](https://github.com/AstrBotDevs/AstrBot/issues/8150)。
+也可把 `astrbot/` 作为原生插件目录部署，以使用 `/furina_status`。
 
-### 创建知识库
+## 4. 知识库
 
-Dashboard → 知识库 → 创建，名称 `furina resource`，上传 `furina_resource/` 下以下文件：
+创建知识库 `furina resource`，上传 `furina_resource/` 下的 Markdown。
+至少包含：
 
-```
-01_profile.md  02_personality.md  03_story_timeline.md  04_combat_mechanics.md
-06_relationships.md  07_quotes.md  09_voice_lines.md  10_moegirl_supplement.md
-```
-
-不上传 `05_voice_style.md`（已内联到 Skill 和 Persona）。
-
-### 配置三个插件
-
-参考 `astrbot/configs/astrbot_plugins.example.json`，关键字段：
-
-**Angel Heart：**
-
-| 字段 | 推荐值 |
-|------|--------|
-| `analyzer_model` | `deepseek/deepseek-v4-flash` |
-| `alias` | `芙宁娜\|Furina\|水神` |
-| `strip_markdown_enabled` | `false` |
-
-**Angel Memory：**
-
-| 字段 | 推荐值 |
-|------|--------|
-| `conversation_scope_map` | `{"furina-roleplay": "furina_default"}` |
-| `enable_soul_system.enabled` | `true` |
-| `enable_soul_system.expression_desire_mid` | `0.6` |
-
-**LivingMemory：**
-
-| 字段 | 推荐值 |
-|------|--------|
-| `recall_engine.injection_method` | `system_prompt` |
-| `filtering_settings.use_persona_filtering` | `true` |
-| `filtering_settings.use_session_filtering` | `false` |
-
-配置完毕后重启 AstrBot。
-
-### 上传 Skill 并创建 Persona
-
-1. 将 `astrbot/skills/furina/SKILL.md` 打包为 ZIP，Dashboard → Skills → 上传。
-2. Dashboard → 人格设定 → 新建，名称 `芙宁娜`，System Prompt 粘贴 `astrbot/persona/furina-astrbot-persona.md` 全部内容，Skills 选 `furina-roleplay`。
-3. Dashboard → 机器人 → 默认人格，切换为 `芙宁娜`。
-
-可选：通过 Angel Memory Debug Tool 导入 `astrbot/angel_memory/furina_core_memories.json` 预置核心记忆。
-
-## 4. 使用验证
-
-在对话框中输入：
-
-```
-芙宁娜，你好。
+```text
+00_index.md
+01_profile.md
+02_personality.md
+03_story_timeline.md
+04_combat_mechanics.md
+05_voice_style.md
+06_relationships.md
+07_quotes.md
+08_faq.md
+09_voice_lines.md
+10_moegirl_supplement.md
+11_sensitive_topics.md
 ```
 
-或在群聊中 @ 机器人。
+Persona 和 Skill 要求涉及原作事实时先调用 `astr_kb_search`。知识库不足时，
+再使用 AstrBot 当前可用的联网工具。
 
-正常情况下应触发角色扮演回复；如果无响应，检查 Angel Heart 插件日志确认 `alias` 匹配。
+## 5. 插件配置
 
-## 5. 常见问题
+参考 `astrbot/configs/astrbot_plugins.example.json`，不要整份覆盖已有配置。
 
-### 在线 wiki 查询长时间没有响应
+### Angel Heart
 
-`furina-wiki.mjs` 的在线 BWIKI 请求设有 10 秒超时，超时后若本地缓存可用会自动回退。频繁超时时，建议安装 genshinstory-cache 或固定使用在线来源：
+- Persona 名称：`芙宁娜`
+- Alias：`芙宁娜|Furina|水神`
+- 群聊增强开启
+- 被呼唤时强制回复
 
-```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜" --source bwiki-online
-```
+### Angel Memory
 
----
-
-### 知识库文档上传后不显示
-
-通常是 Gemini Embedding batch API Bug 导致向量化失败。修复 `gemini_embedding_source.py` 后重新上传文档。详见 [astrbot/README.md](astrbot/README.md#第二步配置-embedding-提供商)。
-
-### AngelMemory 启动报 tantivy 错误
-
-```bash
-docker exec astrbot pip install tantivy
-docker restart astrbot
-```
-
-### 记忆 scope 混用了其他 persona 的内容
-
-确认 Angel Memory 的 `conversation_scope_map` 配置为：
+- `conversation_scope_map` 统一为：
 
 ```json
-{"furina-roleplay": "furina_default"}
+{"芙宁娜": "furina"}
 ```
 
-### LivingMemory 注入与 Angel Heart 冲突
+- 导入 `astrbot/angel_memory/furina_core_memories.json`
+- 把 `astrbot/angel_memory/furina_notes.md` 加入短知识卡
+- 关系亲密度精确值只在当前 `furina` scope 中维护一份
 
-确认 LivingMemory 的 `injection_method` 设为 `system_prompt`，避免与 Angel Heart 的上下文重写互相覆盖。
+### LivingMemory
 
-## 6. 刷新适配包
+- 开启 Persona 隔离
+- 用于用户事实、长期事件与对话历史
+- 注入方式优先 `system_prompt`
+- 不维护第二份竞争的亲密度数字
 
-修改 `src/prompt/` 或 `furina_resource/` 后重新生成：
+## 6. 记忆冲突规则
 
-```powershell
-node .\scripts\furina-astrbot.mjs generate --out astrbot
-node .\scripts\furina-astrbot.mjs check --out astrbot
+Angel Memory 是角色事实和精确关系状态的权威来源；LivingMemory 是历史事实
+来源。两边都召回时：
+
+1. 精确亲密度取 Angel Memory 当前 `scope=furina` 记录。
+2. 用户偏好和共同经历可取 LivingMemory。
+3. 冲突时不自动合并数值，先保持 Angel Memory 值。
+4. 普通寒暄不自动加分；只保存明确偏好、边界、重要事件与情感转折。
+
+## 7. 验证
+
+```bash
+node scripts/furina-astrbot.mjs check --out astrbot
+node --test tests/astrbot.test.mjs
 ```
 
-重新上传 Skill ZIP 和 Persona 系统提示词后重启 AstrBot 生效。
+在 AstrBot 中测试：
+
+| 输入 | 期望 |
+|------|------|
+| `芙宁娜，你好。` | 默认自称“我”，有适量舞台感 |
+| `你和芙卡洛斯有完全相同的记忆吗？` | 明确否认完整记忆移植 |
+| `你那时真的以为自己要死了吗？` | 自然收短，可停顿或设边界 |
+| 高亲密度后告白 | 接受告白，不退回统一拒绝 |
+| 未收录剧情 | 先查知识库，不足时实际使用联网工具 |
+
+## 8. 更新
+
+修改共享人格或资料后：
+
+```bash
+node scripts/furina-astrbot.mjs generate --out astrbot
+node scripts/furina-astrbot.mjs check --out astrbot
+```
+
+重新上传 Persona、Skill 和有变化的知识库文件后重启 AstrBot。

@@ -1,10 +1,9 @@
 .cache/
-vendor/GenshinStory/
 node_modules/
 .DS_Store
+__pycache__/
+*.pyc
 *.log
 *.swp
 *.swo
 Thumbs.db
-.claude/settings.local.json
-.claude/skills/ui-ux-pro-max/

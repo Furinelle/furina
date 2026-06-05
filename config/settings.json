@@ -2,86 +2,32 @@
   "model_parameters": {
     "temperature": 0.85,
     "top_p": 0.95,
-    "top_k": 50,
-    "max_tokens": 1024,
-    "frequency_penalty": 0.3,
-    "presence_penalty": 0.4,
-    "stop_sequences": ["[退出扮演]", "[exit roleplay]"]
+    "max_tokens": 1024
   },
-  "context_window": {
-    "max_history_turns": 20,
-    "furina_resource_note": "furina_resource/ 包含结构化知识库，AI 按需参照 00_index.md 检索对应文件。",
-    "external_wiki_note": "外部原神 wiki 由 scripts/furina-wiki.mjs 按需补查，优先本地 genshinstory-cache，不可用时自动回退在线 BWIKI。"
-  },
-  "wiki_lookup": {
-    "runtime": "scripts/furina-wiki.mjs",
-    "index_runtime": "scripts/furina-wiki-index.mjs",
-    "explore_runtime": "scripts/furina-explore.mjs",
-    "sources_config": "config/wiki_sources.json",
-    "strategy": "local-first-with-online-fallback",
-    "default_source": "genshin-story",
-    "fallback_source": "bwiki-online",
-    "local_cache_root": "../genshinstory-cache",
-    "local_docs_dir": "../genshinstory-cache/web/docs-site/public/domains/gi/docs",
-    "index_cache": ".cache/furina-wiki",
-    "index_cache_gitignored": true,
-    "max_explore_tasks": 5,
-    "explore_timeout_ms": 600000,
-    "network": "required for the default bwiki-online fallback source; optional when local cache is available"
+  "astrbot": {
+    "persona_name": "芙宁娜",
+    "skill": "astrbot/skills/furina/SKILL.md",
+    "persona": "astrbot/persona/furina-astrbot-persona.md",
+    "knowledge_base": "furina resource",
+    "resource_strategy": "astr_kb_search_local_first",
+    "external_lore_strategy": "use_available_astrbot_web_tools"
   },
   "memory": {
-    "enabled": true,
-    "schema_version": "2.0",
-    "runtime": "scripts/furina-memory.mjs",
-    "default_path": "~/.claude/furina-memory.json",
-    "max_memories": 24,
-    "max_injected_memories": 5,
-    "max_notes": 12,
+    "relationship_authority": "angel_memory",
+    "relationship_scope": "furina",
+    "history_authority": "livingmemory",
+    "ordinary_chat_auto_increment": false,
+    "max_saved_memories_per_reply": 1,
     "intimacy_range": [0, 10],
-    "intimacy_default": 0,
-    "soul_states": ["low", "calm", "active", "excited"],
-    "soul_state_default": "calm",
-    "reflection_model": "small",
-    "reflection_max_tokens": 512,
-    "memory_tag_prefix": "📌 记忆",
-    "memory_per_reply_limit": 1,
-    "active_recall": {
-      "enabled": true,
-      "top_k": 5,
-      "min_relevance": 0.35,
-      "avoid_for_casual_greeting": true
-    },
-    "proactive_recall": {
-      "enabled": true,
-      "min_intimacy": 6,
-      "cooldown_turns": 8,
-      "max_per_reply": 1
-    },
-    "sleep_consolidation": {
-      "enabled": true,
-      "trigger_pending_count": 8,
-      "soft_target_core_memories": 8,
-      "hard_max_memories": 24,
-      "decay_weak_after_days": 30
-    },
-    "soul_energy": {
-      "recall_depth_default": 35,
-      "impression_depth_default": 35,
-      "expression_desire_default": 45,
-      "creativity_default": 55,
-      "min": 0,
-      "max": 100
-    },
-    "interaction_state": {
-      "states": ["not_present", "summoned", "getting_familiar", "observation"],
-      "default": "not_present",
-      "observation_turns": 2,
-      "getting_familiar_cooldown_turns": 6
+    "stages": {
+      "0-4": "stage_distance",
+      "5-6": "sincere_opening",
+      "7-8": "accept_reserved",
+      "9-10": "accept_openly"
     }
   },
   "safety": {
     "content_filter": true,
-    "filter_level": "strict",
     "ooc_detection": true
   }
 }

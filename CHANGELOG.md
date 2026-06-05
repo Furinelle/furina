@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-06-05
+
+### Changed
+- AstrBot 分支改为平台专版，移除 Claude Code、Codex、旧 JSON 运行时与仓库
+  wiki 检索层
+- 同步最新芙宁娜/芙卡洛斯身份辨析、自然创伤表达和高亲密度告白接受规则
+- Persona、Skill 与 Angel Memory 卡片统一默认自称“我”
+- Angel Memory scope 统一为 `芙宁娜 -> furina`
+- README、部署手册、manifest 与 settings 改为 AstrBot-only
+
+### Removed
+- 移除依赖本地 genshinstory-cache 的 wiki 测试和脚本
+
 ## [1.13.0] - 2026-05-16
 
 ### Fixed
