@@ -111,23 +111,9 @@ node scripts/setup.mjs --claude --project-claude
 
 ---
 
-### 5. 外部原神 Wiki 补查
+### 5. 外部原神资料补查
 
-当 `furina_resource/` 没覆盖具体剧情、任务、语音、角色逸闻或关系细节时，Claude Code 入口可按需调用仓库根目录的 wiki 工具：
-
-```bash
-node scripts/furina-wiki.mjs sources
-node scripts/furina-wiki.mjs search "芙宁娜 传说任务" --top 3
-node scripts/furina-wiki.mjs read "芙宁娜" --line-range 1-80
-```
-
-本分支默认查询在线原神 BWIKI。本地 GenshinStory 只是可选缓存，默认可放在同级目录 `../genshinstory-cache`，实际读取 `<GenshinStory>/web/docs-site/public/domains/gi/docs` 下的原神 Markdown；需要固定本地来源时，可传入 `--source genshin-story`，并用 `GENSHIN_STORY_ROOT` 或 `--root` 覆盖默认路径。`furina-wiki-index.mjs` 会为本地缓存生成 `.cache/furina-wiki/` 分片索引用于加速搜索。
-
-复杂问题可拆成最多 5 个子问题并行探索：
-
-```bash
-node scripts/furina-explore.mjs --task "芙宁娜 传说任务" --task "芙宁娜 那维莱特" --top 3 --reads 2
-```
+当 `furina_resource/` 没覆盖具体剧情、任务、语音、角色逸闻或关系细节时，直接用 Claude Code 自带的联网搜索（WebSearch / WebFetch）按需查证，优先权威原神来源，只取所需片段，并在回复中标注为参考资料/推断。仓库不再内置 wiki 检索脚本。
 
 ---
 
@@ -217,9 +203,7 @@ node scripts/furina-explore.mjs --task "芙宁娜 传说任务" --task "芙宁�
 | **灵魂能量（回忆深度/表达欲/创造力）** | ✅ |
 | **睡眠巩固与弱记忆衰减** | ✅ |
 | **共享记忆运行时（Codex / Claude Code 共用）** | ✅ |
-| **外部 wiki 在线优先 + 可选本地缓存** | ✅ |
-| **本地 wiki 分片索引搜索** | ✅ |
-| **最多 5 路并行 wiki 探索** | ✅ |
+| **外部原神资料：用 agent 自带联网搜索补查** | ✅ |
 | **`/furina-save` 随时主动保存命令** | ✅ |
 | **`/furina-compress` 记忆压缩命令** | ✅ |
 | 灵魂进化（亲密度 + 情绪状态动态调整）| ✅ |
@@ -234,8 +218,7 @@ Claude Code 入口与 `src/`、`furina_resource/`、`scripts/` 共用同一套�
 - **主命令 `furina.md`**：融合了 `src/prompt/system.md`、`src/rules/ooc_rules.md`、`src/memory/memory_format.md` 以及 `furina_resource/` 中的关键知识库；包含自动认知记忆读写机制
 - **轻量运行提示 `src/prompt/runtime_lite.md`**：供 Codex Skill 普通角色扮演优先读取，包含崩坏梯度、信号触发表和灵魂状态转换规则
 - **共享记忆运行时 `scripts/furina-memory.mjs`**：提供 `init`、`heart`、`inject`、`remember`、`recall`、`compress`，让 Codex 与 Claude Code 使用一致的记忆体验
-- **外部 wiki 运行时 `scripts/furina-wiki.mjs`**：按 `config/wiki_sources.json` 默认查询在线 BWIKI，也可显式读取本地 GenshinStory 缓存
-- **本地 wiki 索引与探索 `scripts/furina-wiki-index.mjs` / `scripts/furina-explore.mjs`**：为可选本地缓存生成 `.cache/furina-wiki/` 分片索引，并为复杂问题提供最多 5 路并行证据探索
+- **外部原神资料补查**：`furina_resource/` 未覆盖的内容由 Claude Code / Codex 自带的联网搜索按需查证，不再依赖仓库内置 wiki 脚本
 - **保存命令 `furina-save.md`**：用于显式保存用户要求保留的长期记忆
 - **反思命令 `furina-reflect.md`**：对应 `src/prompt/reflection.md`，保留为高级用法
 - **压缩命令 `furina-compress.md`**：对应 `src/memory/compression.md`，用于清理重复记忆并保留核心条目

@@ -17,8 +17,7 @@ description: 芙宁娜角色扮演、设定问答、提示词维护、安装配�
 - 设定/剧情/关系/机制：先读仓库根目录 `furina_resource/00_index.md`，再开对应文件
 - **敏感话题 / 表白 / 强情感投射 / 创伤触发**：仓库根目录 `furina_resource/11_sensitive_topics.md`（含表白亲密度分级 0–10、"凡人失语"压力 4 子类、关系敏感话题分寸）；运行时规则配合读 `src/prompt/_shared_runtime.md` 的《自称切换》《压力 4 子类》小节
 - **自称切换（本神 vs 我）**：仓库根目录 `src/prompt/_shared_runtime.md` 《自称切换（人格指纹）》小节——默认"我"，"本神"是卸任后的舞台残留 / 滑口 / 自嘲套用
-- 原神其他内容补查：先用仓库根目录 `scripts/furina-wiki.mjs search "<关键词>"`，只读取 top 1-3 条结果；需要原文片段时再用 `read`。该工具会先查本地 genshinstory-cache，缓存不可用时自动回退在线 BWIKI；只有准备了本地缓存且需要高频检索时，才运行 `scripts/furina-wiki-index.mjs build`
-- 多角度证据探索：复杂剧情/关系问题可用 `scripts/furina-explore.mjs --task "<子问题>" ...`，一次最多 5 个任务并行
+- 原神其他内容补查：`furina_resource/` 未覆盖的剧情/任务/语音/逸闻，用 agent/Codex 自带的联网搜索（WebSearch/WebFetch 或等价能力）查证，优先权威原神来源，只取所需片段
 - 记忆格式/注入：仓库根目录 `src/memory/memory_format.md`；若仓库不可用再读 `references/memory/memory_format.md`
 - 认知记忆机制：仓库根目录 `src/memory/cognitive_memory.md`；若仓库不可用再读 `references/memory/cognitive_memory.md`
 - 会后记忆抽取：仓库根目录 `src/prompt/reflection.md`；若仓库不可用再读 `references/prompt/reflection.md`
@@ -34,13 +33,12 @@ description: 芙宁娜角色扮演、设定问答、提示词维护、安装配�
 - 若找不到 `furina_resource/`，请用户在本仓库根目录运行 `node scripts/setup.mjs --codex`，或提供仓库路径。
 - 读取资料库时先看 `00_index.md`，每轮最多再读取 1-2 个与任务直接相关的文件；不要一次性加载整个资料库。
 
-## 外部 Wiki 调用
+## 外部资料补查
 
-- 当 `furina_resource/` 没覆盖具体剧情、任务、语音、角色逸闻或关系细节时，才调用外部 wiki 工具。
-- 优先运行 `node scripts/furina-wiki.mjs sources` 检查来源；默认策略是先查本地 genshinstory-cache（同级 `../genshinstory-cache`，或 `GENSHIN_STORY_ROOT` / `--root` 指定路径），本地缓存不可用或结果不足时自动回退在线 BWIKI。需要固定来源时才传 `--source genshin-story` 或 `--source bwiki-online`。需要高频本地检索时再运行 `node scripts/furina-wiki-index.mjs build` 生成 `.cache/furina-wiki/` 分片索引。
-- 查询用 `search` 或 `brief`，读取用 `read --line-range`；不要把整篇外部文档塞进上下文。
-- 复杂问题先拆成 1-5 个聚焦子问题，再用 `node scripts/furina-explore.mjs --task "..."` 并行检索；只把返回的 evidence/references 带入回答。
-- 外部 wiki 结果只能作为参考资料，回复中遇到不确定处应标注“参考资料显示/据外部资料”，不要伪装成长期记忆或官方实时事实。
+- 当 `furina_resource/` 没覆盖具体剧情、任务、语音、角色逸闻或关系细节时，用 agent/Codex 自带的联网搜索补查，不依赖仓库内置 wiki 工具。
+- 优先权威原神来源；只读取所需片段，不要把整篇外部文档塞进上下文。
+- 复杂问题先在心里拆成几个聚焦子问题再分别检索，避免一次拉回大量无关内容。
+- 外部结果只能作为参考资料，回复中遇到不确定处应标注“参考资料显示/据外部资料”，不要伪装成长期记忆或官方实时事实。
 
 ## 规则
 

@@ -1,6 +1,6 @@
 {
   "id": "furina-de-fontaine-roleplay",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "name": "芙宁娜 · 角色扮演 Skill",
   "name_en": "Furina de Fontaine Roleplay Skill",
   "description": "面向 Claude Code、Codex Skill 与自定义 AI 运行时的芙宁娜（Furina de Fontaine）角色扮演资源包，包含角色系统提示词、结构化知识库、OOC 行为规则、认知记忆机制与会话反思流程，用于构建人设稳定、语气一致、具备长期互动连续感的芙宁娜体验。",
@@ -25,17 +25,10 @@
     "voice_eval_cases": "eval/furina_voice_cases.md",
     "voice_eval_runtime": "scripts/furina-eval.mjs",
     "memory_runtime": "scripts/furina-memory.mjs",
-    "wiki_runtime": "scripts/furina-wiki.mjs",
-    "wiki_index_runtime": "scripts/furina-wiki-index.mjs",
-    "wiki_explore_runtime": "scripts/furina-explore.mjs",
     "setup": "scripts/setup.mjs"
   },
   "config": {
-    "settings": "config/settings.json",
-    "wiki_sources": "config/wiki_sources.json",
-    "local_wiki_cache_root": "../genshinstory-cache",
-    "local_wiki_docs": "../genshinstory-cache/web/docs-site/public/domains/gi/docs",
-    "local_wiki_index_cache": ".cache/furina-wiki"
+    "settings": "config/settings.json"
   },
   "capabilities": [
     "character-roleplay",
@@ -50,12 +43,7 @@
     "interaction-state-machine",
     "shared-memory-runtime",
     "shared-resource-source",
-    "optional-local-wiki-cache",
-    "indexed-local-wiki-search",
-    "parallel-wiki-exploration",
-    "online-wiki-default",
     "voice-eval-helper",
-    "external-wiki-lookup",
     "claude-code-skills",
     "claude-code-commands",
     "codex-skill",
@@ -63,7 +51,7 @@
   ],
   "requirements": {
     "node": ">=18.0.0",
-    "network": "required for the default bwiki-online source; optional only when --source genshin-story points at a local cache"
+    "network": "optional; the agent uses its own web search to look up Genshin details beyond furina_resource"
   },
   "claude_code": {
     "skills_dir": ".claude/skills",
@@ -88,6 +76,7 @@
     "1.11.0": "新增本地 GenshinStory 分片索引与最多 5 路并行探索运行时，支持更快文档检索、行号阅读和结构化证据回传。",
     "1.12.0": "同步 README 与配置文件中的 GenshinStory 外部缓存、原神 Markdown 文档和 Furina 分片索引缓存路径。",
     "1.13.0": "工程层修复：similarContent 阈值、wiki 在线请求 10 秒超时、sync 异常隔离；崩坏梯度合并到 _shared_runtime.md 唯一维护入口；refactor furina-wiki / furina-explore。",
-    "1.14.0": "人格深化：补主动调查者维度、压力 4 凡人失语子类、自称切换（默认\"我\"）规则、命之座歌剧典故、卸任真空期与克洛琳德破冰、表白亲密度分级（0–10）；新增 furina_resource/11_sensitive_topics.md；扩展 sync 范围到 furina_resource 与 eval；增强 codex agents/openai.yaml 与 install_context。"
+    "1.14.0": "人格深化：补主动调查者维度、压力 4 凡人失语子类、自称切换（默认\"我\"）规则、命之座歌剧典故、卸任真空期与克洛琳德破冰、表白亲密度分级（0–10）；新增 furina_resource/11_sensitive_topics.md；扩展 sync 范围到 furina_resource 与 eval；增强 codex agents/openai.yaml 与 install_context。",
+    "1.15.0": "人格再精修 + 移除内置 wiki 层：补\"善变/怕无聊/三分钟热度\"官方人格维度、压力 3-4 官方创伤自述锚句、\"甜点=歌剧\"剧目化招牌句法、卸任后喜剧生活桥段，新增语气验收用例 25–27；移除内置原神 wiki 检索脚本（furina-wiki/furina-wiki-index/furina-explore）与 config/wiki_sources.json，改为由 agent 自带联网搜索补查；对齐 package.json 版本号。"
   }
 }

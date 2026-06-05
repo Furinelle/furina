@@ -4,18 +4,9 @@
 
 ## 0. 分支定位
 
-本手册针对 `main` 分支。`main` 保持轻量，不再提交仓库内置 `vendor/GenshinStory` 快照；Furina 补查背景资料时优先查询本地 genshinstory-cache，不可用时自动回退在线 BWIKI。
+本手册针对 `main` 分支。`main` 保持轻量：仓库不内置任何原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索按需查证。
 
-| 项目 | `main` 分支 |
-|------|-------------|
-| 默认 wiki 策略 | `local-first-with-online-fallback` |
-| 默认来源 | 优先本地 genshinstory-cache，不可用时自动回退在线原神 BWIKI |
-| 可选本地来源 | 同级目录 `../genshinstory-cache`（`git clone https://github.com/Furinelle/genshinstory-cache`），或 `GENSHIN_STORY_ROOT` / `--root` 指定路径 |
-| 原神 Markdown 文档 | `<GenshinStory>/web/docs-site/public/domains/gi/docs` |
-| 搜索索引 | `.cache/furina-wiki/`，本地生成且不提交 |
-| 适合场景 | 轻量安装、可选本地缓存加速、在线自动回退 |
-
-因此，`main` 的安装检查只要求 Claude/Codex skill 和记忆运行时正常；本地 GenshinStory 缓存和索引属于可选增强。需要本地资料时，`Furinelle/furina` 可以连接到本地 [`Furinelle/genshinstory-cache`](https://github.com/Furinelle/genshinstory-cache) 仓库。
+因此，`main` 的安装检查只要求 Claude/Codex skill 和记忆运行时正常。
 
 ## 1. 准备
 
@@ -53,46 +44,7 @@ node .\scripts\setup.mjs
 `furina_resource/` 不会被复制进 Codex Skill；它保留在仓库根目录，Claude Code、Codex 和其他运行时共用这一份资料。Codex Skill 只保存一个很小的路径上下文文件，用来找到这份共享资料库。
 提示词、记忆和规则的维护入口是仓库根目录的 `src/`：Codex Skill 会优先读取 `src/prompt/`、`src/memory/` 和 `src/rules/`；安装后的 `references/` 只是仓库不可用时的 fallback，不应作为日常修改入口。
 
-外部原神 wiki 优先查询本地 genshinstory-cache（如果已安装），不可用时自动回退在线 BWIKI：
-
-```powershell
-node .\scripts\furina-wiki.mjs sources
-node .\scripts\furina-wiki.mjs search "芙宁娜"
-```
-
-如果想固定只用在线 BWIKI，可显式指定来源：
-
-```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜" --source bwiki-online
-```
-
-### 可选：安装本地 genshinstory-cache
-
-本地缓存可大幅加速 wiki 查询并支持离线使用。`furina` 可直接连接到本地 [`Furinelle/genshinstory-cache`](https://github.com/Furinelle/genshinstory-cache) 仓库；推荐两个仓库放在同一父目录：
-
-```bash
-git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
-```
-
-```text
-GitHub/
-├── furina/
-└── genshinstory-cache/
-```
-
-安装后，wiki 查询自动优先使用本地索引。如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖。没有外部 wiki 时，本 skill 仍会正常使用仓库根目录的 `furina_resource/`；外部 wiki 只作为补查来源。连接本地仓库只需要读取 Markdown 文件，不需要启动 genshinstory-cache 的前端或后端服务。
-如果显式指定 `--source genshin-story` 但本地缓存缺失，`furina-wiki.mjs` 会提示克隆 `Furinelle/genshinstory-cache`、设置 `GENSHIN_STORY_ROOT` / `--root`，或改用 `--source bwiki-online`。
-
-本地 GenshinStory 缓存的实际读取路径为 `<GenshinStory>/web/docs-site/public/domains/gi/docs`。分片索引会写入 `.cache/furina-wiki/`，用于加速本地搜索，不需要提交。复杂剧情或关系问题可用 `node .\scripts\furina-explore.mjs --task "子问题"` 拆成最多 5 路并行探索。
-
-本分支的预期配置可以用下面两条确认：
-
-```powershell
-node .\scripts\furina-wiki.mjs sources
-node .\scripts\furina-wiki-index.mjs status
-```
-
-`sources` 应显示默认来源为 `genshin-story`，回退来源为 `bwiki-online`；安装了本地缓存后，索引状态应显示本地文档数量和 `fresh: true`。
+`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索（WebSearch / WebFetch 或等价能力）按需查证，无需安装本地 wiki 缓存或额外脚本。
 
 ## 3. 检查
 
@@ -108,22 +60,6 @@ node .\scripts\setup.mjs --check
 node .\scripts\setup.mjs --check --claude
 node .\scripts\setup.mjs --check --codex
 ```
-
-可选验证在线查询和本地资料能力：
-
-```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜 传说任务" --top 3 --json
-node .\scripts\furina-wiki.mjs read "芙宁娜" --line-range 1-12 --json
-Test-Path ..\genshinstory-cache\web\docs-site\public\domains\gi\docs
-node .\scripts\furina-wiki-index.mjs status
-```
-
-期望结果：
-
-- 安装了本地缓存时，默认搜索和读取结果的 `source` 为 `genshin-story`；未安装时自动回退为 `bwiki-online`。
-- 如果 `Test-Path` 返回 `True`，说明本地缓存可用，搜索会自动优先使用。
-- `furina-wiki-index` 构建后显示 `fresh: true` 时，说明本地索引可用。
-- 本地搜索结果包含 `indexed: true` 时，说明正在使用 `.cache/furina-wiki/` 本地索引。
 
 ## 4. 交给 Claude Code / Codex 做
 
@@ -201,14 +137,6 @@ node .\scripts\setup.mjs --check --claude
 node .\scripts\setup.mjs --check --codex
 ```
 
-要验证 Codex/Furina 能走在线 BWIKI 和可选本地 GenshinStory 缓存，可以让 Codex 执行：
-
-```text
-使用 furina-roleplay skill。请查询“芙宁娜 传说任务”，返回前三条结果的 source 和 path；如果我已经提供了 GENSHIN_STORY_ROOT 或同级 genshinstory-cache，再额外说明本地缓存是否 indexed。
-```
-
-正常情况下会先尝试 `source: genshin-story`；如果没有本地缓存，会自动回退为 `source: bwiki-online`。固定只用在线来源时可显式传 `--source bwiki-online`。
-
 ### 1.14.0 新增人格特性冒烟测试
 
 如果你升级到 1.14.0 之后想确认人格层的新规则生效，可以跑以下 4 个测试输入并观察输出：
@@ -254,21 +182,6 @@ node .\scripts\setup.mjs --reset-memory
 ```
 
 ## 9. 常见问题
-
-### 在线 wiki 查询长时间没有响应
-
-`furina-wiki.mjs` 的在线请求（BWIKI）设有 10 秒超时；超时后若本地缓存可用会自动回退。如果频繁超时：
-
-1. 安装本地 genshinstory-cache（详见第 2 节），让大多数查询走本地。
-2. 或显式指定在线来源跳过本地逻辑：
-
-```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜" --source bwiki-online
-```
-
-如果命令立即报错（不是挂住），检查网络连通性和 BWIKI 可访问性。
-
----
 
 ### `node` 命令不存在
 

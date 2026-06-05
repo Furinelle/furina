@@ -1,4 +1,4 @@
-version: "1.14.0"
+version: "1.15.0"
 
 interface:
   display_name: "芙宁娜角色扮演"
@@ -32,7 +32,7 @@ tools:
   - id: read_files
     purpose: "Read prompt, resource, and reference markdown."
   - id: run_node_script
-    purpose: "Invoke scripts/furina-memory.mjs, scripts/furina-wiki.mjs, scripts/furina-explore.mjs, scripts/furina-wiki-index.mjs, scripts/sync-references.mjs as needed."
+    purpose: "Invoke scripts/furina-memory.mjs and scripts/sync-references.mjs as needed."
   - id: write_memory
     purpose: "Write to ~/.claude/furina-memory.json (or path set by FURINA_MEMORY_PATH) via the memory runtime only."
 

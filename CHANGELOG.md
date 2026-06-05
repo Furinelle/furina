@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-06-05
+
+### Added
+- `furina_resource/02_personality.md`：新增《善变与好奇（官方人格维度）》小节——补"善变 / 怕无聊 / 三分钟热度"这一官方人格维度（官方语音"热情越容易产生越容易失去"、闲聊"好无聊啊"、2 命《女人善变》）；关键词追加"善变（喜新厌旧）/ 怕无聊 / 好奇心旺盛"
+- `furina_resource/05_voice_style.md`：新增《招牌句法：把日常「剧目化」》（选角 / 布景 / 排练 / 谢幕迁移用法，官方"甜点就像歌剧"）与《卸任后的喜剧生活桥段》（购物冲动送剧团、嘴硬控体态、冲浪天赋、怕无聊、威严漏出来）
+- `furina_resource/07_quotes.md`：新增《官方创伤自述锚句（压力 3-4「短真话」方向）》——补"既没有过去也没有未来""我终于开始扮演我自己了"等官方平静自述，区分回望面与审判日恐慌面
+- `src/prompt/_shared_runtime.md`：声音区块新增"性情：好奇心旺盛、怕无聊、容易三分钟热度"；反应公式新增"嫌无聊 / 话题重复"一条
+- `eval/furina_voice_cases.md`：新增语气验收用例 25–27（善变 / 怕无聊、剧目化句法、创伤回望面）
+
+### Removed
+- 移除内置原神 wiki 检索层：删除 `scripts/furina-wiki.mjs`、`scripts/furina-wiki-index.mjs`、`scripts/furina-explore.mjs`、`config/wiki_sources.json` 与 `tests/wiki.test.mjs`。`furina_resource/` 未覆盖的原神细节改由 agent 自带的联网搜索（WebSearch / WebFetch）按需查证
+
+### Changed
+- `.claude/skills/furina/SKILL.md`：`allowed-tools` 去掉 wiki Bash 权限、加入 `WebSearch WebFetch`；工作流第 4-5 步合并为"用自带联网搜索补查并标注参考资料/推断"
+- `codex/skills/furina-roleplay/SKILL.md` 与 `agents/openai.yaml`：外部资料路由改为联网搜索，移除 wiki 脚本引用
+- `config/settings.json`：移除 `wiki_lookup` 段与 `external_wiki_note`，改为 `external_lore_note`
+- `config/manifest.json`：版本 → 1.15.0；移除 wiki 相关的 `entry_point` / `config` / `capabilities` / `requirements` 项
+- `scripts/setup.mjs`：`install_context.json` 移除 `wiki_runtime` / `explore_runtime` 两键
+- `.gitignore`：移除已废弃的 `vendor/GenshinStory/`
+
+### Fixed
+- `package.json`：版本号从 1.13.0 对齐到 1.15.0（1.14.0 发布时漏改）
+
+### Docs
+- `README.md` / `SETUP_GUIDE.md` / `.claude/CLAUDE.md` / `claudecode/README.md` / `scripts/README.md`：移除 wiki 安装、查询、排障章节，统一改为"用 agent 自带联网搜索补查"；README 角色精修要点更新到 1.15.0
+
 ## [1.14.0] - 2026-05-23
 
 ### Added
@@ -134,7 +160,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - 简化 Furina skill 安装说明
 - 对齐项目文档与元数据
 
-[Unreleased]: https://github.com/Furinelle/furina/compare/v1.12.0...HEAD
+[Unreleased]: https://github.com/Furinelle/furina/compare/v1.15.0...HEAD
+[1.15.0]: https://github.com/Furinelle/furina/compare/v1.14.0...v1.15.0
+[1.14.0]: https://github.com/Furinelle/furina/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/Furinelle/furina/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/Furinelle/furina/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/Furinelle/furina/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/Furinelle/furina/compare/v1.9.0...v1.10.0

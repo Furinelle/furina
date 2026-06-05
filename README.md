@@ -8,33 +8,9 @@
 
 ## 当前分支说明
 
-本说明针对 `main` 分支。`main` 保持轻量，不再提交仓库内置 `vendor/GenshinStory` 快照；外部原神资料优先查询本地 genshinstory-cache（可选安装），不可用时自动回退在线 BWIKI。
+`main` 分支保持轻量：仓库不内置任何原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索（WebSearch / WebFetch）按需查证，并在回复中标注为参考资料/推断。
 
-| 项目 | `main` 分支 |
-|------|-------------|
-| 外部原神资料 | 优先本地 genshinstory-cache 快速搜索；本地不可用时自动回退在线 BWIKI |
-| 本地资料体积 | 轻量，不包含完整 GenshinStory 快照 |
-| 查询性能 | 本地缓存优先，在线自动回退；本机有 GenshinStory 缓存时可生成 `.cache/furina-wiki/` 分片索引 |
-| 深度探索 | 支持 `scripts/furina-explore.mjs` 最多 5 路并行探索，默认 10 分钟任务窗口 |
-| 适用场景 | 安装简单、可选本地缓存加速、在线自动回退 |
-
-如果需要离线或半离线检索，`Furinelle/furina` 可以连接到本地 [`Furinelle/genshinstory-cache`](https://github.com/Furinelle/genshinstory-cache) 仓库。推荐把两个仓库放在同一个父目录下，并将缓存克隆为 `../genshinstory-cache`：
-
-```bash
-git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
-```
-
-目录结构示例：
-
-```text
-GitHub/
-├── furina/
-└── genshinstory-cache/
-```
-
-也可用 `GENSHIN_STORY_ROOT` / `--root` 指向其他本地路径。本地缓存安装后，wiki 查询自动优先读取该仓库的 `web/docs-site/public/domains/gi/docs`，不需要启动 genshinstory-cache 的前端或后端；本地不可用时回退在线 BWIKI。
-
-## 角色精修要点（1.14.0 起）
+## 角色精修要点（1.15.0 起）
 
 本 skill 针对芙宁娜真实人格做了几层关键约束，是它与"普通傲娇大小姐"模板的核心区别：
 
@@ -42,6 +18,9 @@ GitHub/
 - **崩坏梯度 0–4**：从"标准大明星姿态"到"凡人失语"，按用户施压程度推进；压力 4 区分"孤独感慨"与"面对处决时的失语"两个子类
 - **表白亲密度分级（0–10）**：低亲密度礼仪化挡回；7–8 接受但保留体面；9–10 主动放下姿态、用"她式回应"接住。详见 [furina_resource/11_sensitive_topics.md](furina_resource/11_sensitive_topics.md)
 - **敏感话题安全表**：10 类容易写歪的话题（想念芙卡洛斯、白淞镇、审判日、骗子贬损等）的写法对照
+- **善变 / 怕无聊维度（1.15.0 新增）**：补"对新鲜事眼睛发亮、对重复迅速厌倦"的官方人格维度（官方语音 + 2 命《女人善变》），闲聊时主动找乐子而非干等喂话。见 [furina_resource/02_personality.md](furina_resource/02_personality.md) 《善变与好奇》
+- **官方创伤自述锚句（1.15.0 新增）**：压力 3-4 给"短真话"时靠近官方平静自述（"既没有过去也没有未来""开始扮演我自己"），区分回望面与审判日恐慌面。见 [furina_resource/07_quotes.md](furina_resource/07_quotes.md)
+- **"剧目化"招牌句法（1.15.0 新增）**：把日常拆成选角 / 布景 / 谢幕，复刻官方"甜点就像歌剧"的语感。见 [furina_resource/05_voice_style.md](furina_resource/05_voice_style.md)
 
 修改运行时行为时，统一进入 `src/prompt/_shared_runtime.md`；敏感话题分寸进 `furina_resource/11_sensitive_topics.md`。
 
@@ -52,7 +31,7 @@ GitHub/
 | Claude Code 角色扮演 | 项目内直接使用 `/furina 你好，芙宁娜。` |
 | Codex Skill | 让 Codex 按需读取芙宁娜设定、共享知识库、记忆规则和 OOC 规则 |
 | 资料库 / RAG | 直接使用 `furina_resource/` 中的结构化 Markdown |
-| 外部原神 wiki 查询 | 通过 `scripts/furina-wiki.mjs` 优先查询本地 GenshinStory 缓存，不可用时自动回退在线 BWIKI |
+| 外部原神资料补查 | 用 agent 自带的联网搜索（WebSearch / WebFetch）查证 `furina_resource/` 未覆盖的内容 |
 | 自定义角色运行时 | 组合 `src/prompt/`、`src/rules/`、`src/memory/` 和 `scripts/furina-memory.mjs` |
 
 ## 快速开始
@@ -113,10 +92,6 @@ node .\scripts\setup.mjs --check
 | `node .\scripts\furina-eval.mjs list` | 列出语气验收用例 |
 | `node .\scripts\furina-eval.mjs prompt --case 3` | 生成单条语气验收提示 |
 | `node .\scripts\furina-eval.mjs batch` | 按当前用例表生成全量语气验收评分模板 |
-| `node .\scripts\furina-wiki.mjs sources` | 检查外部原神 wiki 来源 |
-| `node .\scripts\furina-wiki-index.mjs build` | 为可选本地 GenshinStory 缓存构建分片搜索索引 |
-| `node .\scripts\furina-wiki.mjs search "芙宁娜"` | 检索外部原神 wiki |
-| `node .\scripts\furina-explore.mjs --task "芙宁娜 传说任务"` | 并行探索外部 wiki 证据 |
 
 Claude Code 可用：
 
@@ -153,78 +128,19 @@ node .\scripts\furina-memory.mjs compress
 
 记忆格式采用 `version: "2.0"`，包含亲密度、交互状态、灵魂状态、核心记忆、背景笔记和睡眠巩固状态。反思 JSON 中的 `soul_state` 应使用字符串值（`low` / `calm` / `active` / `excited`）；运行时也兼容旧版整数 `0-3` 并会规范化为字符串。记忆条目 ID 会按已有最大 `Mxxx` 稳定递增，避免压缩或删除后因数组位置变化而改号。`type=boundary` 默认按 `priority=3` 保护；高亲密度且气氛合适时，运行时可通过 `recall_mode: "proactive"` 允许少量“顺带想起”的主动回忆。完整字段说明见 [src/memory/memory_format.md](src/memory/memory_format.md) 与 [src/memory/cognitive_memory.md](src/memory/cognitive_memory.md)。
 
-## 外部原神 Wiki
+## 外部原神资料补查
 
-`scripts/furina-wiki.mjs` 用于按需查询芙宁娜资料库未覆盖的外部原神内容。AI 回复时应严格遵循查询优先级：
+回复时的查询优先级：
 
 ```
 1. src/prompt/ (角色 Prompt — 人格与语气规范)
    ↓ 需要芙宁娜相关资料时
 2. furina_resource/ (结构化知识库 — 角色设定、台词、FAQ)
    ↓ 需要芙宁娜资料库未覆盖的原神内容时
-3. 本地 genshinstory-cache (可选安装，快速离线搜索)
-   ↓ 本地缓存不可用时自动回退
-4. wiki.biligame.com/ys (在线原神 BWIKI)
+3. agent 自带的联网搜索 (WebSearch / WebFetch 或等价能力)
 ```
 
-每次只读取少量命中片段，不要整篇塞进上下文。
-
-### 可选：安装本地 genshinstory-cache
-
-本地缓存可大幅加速 wiki 查询并支持离线使用。安装为可选——不装也能正常使用（自动回退在线）。`furina` 可直接连接到本地 [`Furinelle/genshinstory-cache`](https://github.com/Furinelle/genshinstory-cache) 仓库，推荐与 `furina` 放在同一父目录：
-
-```bash
-git clone https://github.com/Furinelle/genshinstory-cache ../genshinstory-cache
-```
-
-```text
-GitHub/
-├── furina/
-└── genshinstory-cache/
-```
-
-缓存路径参考：
-
-| 类型 | 路径 |
-|------|------|
-| GenshinStory 缓存仓库 | `../genshinstory-cache`，或 `GENSHIN_STORY_ROOT` / `--root` 指定的路径 |
-| 原神 Markdown 文档 | `<GenshinStory>/web/docs-site/public/domains/gi/docs` |
-| Furina 分片搜索索引 | `.cache/furina-wiki/` |
-
-安装本地缓存后，首次高频检索前可构建分片索引。索引保存在 `.cache/furina-wiki/`，不会提交到 Git：
-
-```powershell
-node .\scripts\furina-wiki-index.mjs status
-node .\scripts\furina-wiki-index.mjs build
-```
-
-### 查询命令
-
-```powershell
-node .\scripts\furina-wiki.mjs sources
-node .\scripts\furina-wiki.mjs search "芙宁娜 那维莱特" --top 5
-node .\scripts\furina-wiki.mjs brief "芙宁娜 传说任务"
-node .\scripts\furina-wiki.mjs read "芙宁娜" --line-range 1-80
-```
-
-固定使用在线 BWIKI（跳过本地缓存）：
-
-```powershell
-node .\scripts\furina-wiki.mjs search "芙宁娜 那维莱特" --source bwiki-online
-```
-
-如果要改用其他 GenshinStory 路径，请设置 `GENSHIN_STORY_ROOT` 或传入 `--root` 覆盖。
-如果显式指定本地来源但缓存缺失，工具会在错误信息中给出可执行的恢复建议：克隆 `Furinelle/genshinstory-cache`、设置 `GENSHIN_STORY_ROOT` / `--root`，或改用 `--source bwiki-online`。
-
-复杂问题可拆成 1-5 个子问题并行探索；每个子任务会先搜索、再读取命中片段，并返回 evidence/references：
-
-```powershell
-node .\scripts\furina-explore.mjs --task "芙宁娜 传说任务" --task "芙宁娜 那维莱特" --top 3 --reads 2
-```
-
-AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 genshinstory-cache → 在线 BWIKI；每次只读取少量命中片段。
-
-在线 BWIKI 请求设有 **10 秒超时**；超时后会自动回退到本地缓存，本地也不可用时抛出错误。若在线响应不稳定，建议安装本地 genshinstory-cache 或传入 `--source bwiki-online --no-fallback` 明确限定来源。
+仓库不再内置 wiki 检索脚本。`furina_resource/` 未覆盖的剧情、任务、语音或关系细节，由 agent 用自带的联网搜索按需查证：优先权威原神来源，每次只取所需片段，不要整篇塞进上下文，并在回复中标注为参考资料/推断，不要伪装成长期记忆或官方实时事实。
 
 ## 目录说明
 
@@ -241,12 +157,8 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 | `scripts/setup.mjs` | 一键安装器 |
 | `scripts/furina-memory.mjs` | 共享记忆运行时 |
 | `scripts/furina-eval.mjs` | 语气验收辅助脚本 |
-| `scripts/furina-wiki.mjs` | 外部原神 wiki 查询工具 |
-| `scripts/furina-wiki-index.mjs` | 可选本地 GenshinStory 分片索引构建与查询工具 |
-| `scripts/furina-explore.mjs` | 最多 5 路并行外部 wiki 探索工具 |
 | `scripts/sync-references.mjs` | 将 `src/` 同步到 Codex Skill `references/` fallback |
 | `config/settings.json` | 运行参数、记忆阈值和安全开关的配置说明来源 |
-| `config/wiki_sources.json` | 外部 wiki 来源配置 |
 | `config/manifest.json` | 项目元数据 |
 | `eval/furina_voice_cases.md` | 语气验收用例 |
 | `tests/` | 记忆运行时单元测试 |
@@ -254,8 +166,7 @@ AI 使用时应遵循查询优先级：prompt → `furina_resource/` → 本地 
 ## 配置文件
 
 - `config/manifest.json` 是项目元数据清单，供发布、索引或外部工具读取；`scripts/setup.mjs` 不依赖它执行安装。
-- `config/settings.json` 记录建议运行参数、外部 wiki 补查/索引/探索策略、记忆上限、主动回忆阈值、主动投喂阈值、睡眠巩固软目标/硬上限和 OOC 安全开关；`scripts/furina-memory.mjs` 会读取其中的关键记忆阈值，外部运行时也可以把它作为配置来源。
-- `config/wiki_sources.json` 由 `scripts/furina-wiki.mjs` 读取，用于配置本地 genshinstory-cache 优先、在线 BWIKI 回退，以及可选本地缓存路径。
+- `config/settings.json` 记录建议运行参数、记忆上限、主动回忆阈值、主动投喂阈值、睡眠巩固软目标/硬上限和 OOC 安全开关；`scripts/furina-memory.mjs` 会读取其中的关键记忆阈值，外部运行时也可以把它作为配置来源。
 
 ## 知识库索引
 

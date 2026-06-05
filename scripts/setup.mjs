@@ -152,8 +152,6 @@ function installCodex(paths, dryRun) {
       shared_runtime: path.join(ROOT, "src", "prompt", "_shared_runtime.md"),
       voice_eval_cases: path.join(ROOT, "eval", "furina_voice_cases.md"),
       memory_runtime: path.join(ROOT, "scripts", "furina-memory.mjs"),
-      wiki_runtime: path.join(ROOT, "scripts", "furina-wiki.mjs"),
-      explore_runtime: path.join(ROOT, "scripts", "furina-explore.mjs"),
       sync_references_runtime: path.join(ROOT, "scripts", "sync-references.mjs"),
       generated_by: "scripts/setup.mjs"
     },
