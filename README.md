@@ -26,8 +26,10 @@ Mnemosyne 长期关系记忆。Claude Code / Codex 版本在 `main`，AstrBot �
 - `furina_resource/`：本地优先的结构化芙宁娜资料库。
 - 联网补查：本地不足时使用 Hermes `web_search` / `web_extract`，有
   `EXA_API_KEY` 时优先 Exa。
-- Mnemosyne 关系记忆：固定记录 `preference-furina-intimacy` 是 Hermes
-  亲密度的唯一权威来源。
+- Mnemosyne 统一记忆：偏好、长期目标、重要见闻和关系互动直接通过
+  `mnemosyne` 工具保存；不再使用技能标记或 Hermes 内置
+  `MEMORY.md` / `USER.md`。
+- 固定记录 `preference-furina-intimacy` 是 Hermes 亲密度的唯一权威来源。
 - 同人关系成长：`0-4` 保持距离，`5-6` 留下真诚可能，`7-8` 接受但保留
   少量矜持，`9-10` 坦率接受告白。
 - OOC 约束：默认自称“我”；不把芙卡洛斯的完整记忆和履历直接移植给芙宁娜；
@@ -51,8 +53,9 @@ node scripts/setup.mjs --check
 1. 安装或启用 Hermes Mnemosyne memory provider。
 2. 备份不同的旧 `~/.hermes/SOUL.md`，再安装芙宁娜默认身份。
 3. 将仓库 `hermes/skills` 合并进 `skills.external_dirs`。
-4. 初始化固定关系记录，不重复创建亲密度记忆。
-5. 在 Exa 密钥存在且搜索后端为空时设置 Exa 优先。
+4. 关闭 Hermes 内置 `MEMORY.md` / `USER.md` 注入与后台记忆提醒。
+5. 初始化固定关系记录，不重复创建亲密度记忆。
+6. 在 Exa 密钥存在且搜索后端为空时设置 Exa 优先。
 
 如需从旧版 Furina JSON 一次性迁移亲密度：
 
@@ -88,6 +91,9 @@ node scripts/furina-relationship.mjs set 9 --reason "明确校准长期关系状
 
 普通聊天不自动加分。Hermes 不应从旧 JSON、模糊回忆或另一条 Mnemosyne
 记录推断亲密度。
+
+角色互动与普通长期信息也只有 Mnemosyne 一层：Skill 不输出
+`[📌 记忆: ...]`，Hermes 不使用内置 `memory` 工具另存副本。
 
 ## 资料检索顺序
 

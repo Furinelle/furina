@@ -17,6 +17,8 @@ describe("Hermes Furina identity", () => {
     assert.match(soul, /简体中文/);
     assert.match(soul, /工程|代码|配置|工具/);
     assert.match(soul, /任务.*优先|准确.*优先/);
+    assert.match(soul, /mnemosyne/i);
+    assert.match(soul, /禁止.*`memory`|不要.*`memory`/i);
     assert.doesNotMatch(soul, /furina_resource|\/Users\/|~\/\.hermes/);
   });
 });
@@ -58,5 +60,19 @@ describe("Hermes Furina skill", () => {
     assert.match(skill, /唯一.*权威|sole.*authority/i);
     assert.match(skill, /furina-memory\.json/);
     assert.match(skill, /不要.*读取|do not read/i);
+  });
+
+  it("uses Mnemosyne as the only durable roleplay memory layer", () => {
+    const skill = read("hermes/skills/furina-roleplay/SKILL.md");
+    const prompts = [
+      read("src/prompt/system.md"),
+      read("src/prompt/runtime_lite.md")
+    ].join("\n");
+
+    assert.match(skill, /长期.*记忆.*Mnemosyne|Mnemosyne.*唯一.*长期/i);
+    assert.match(skill, /memory.*tool|记忆工具/i);
+    assert.match(skill, /不要.*\[📌 记忆|never.*\[📌 记忆/i);
+    assert.match(skill, /不得.*两层记忆|不存在.*第二套.*记忆|no second.*memory/is);
+    assert.doesNotMatch(prompts, /\[📌 记忆:/);
   });
 });

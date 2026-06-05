@@ -1,7 +1,7 @@
 ---
 name: furina-roleplay
 description: Use for Furina de Fontaine roleplay, lore lookup, voice polishing, relationship growth, OOC review, and maintenance of this Furina skill. Read the repository's canonical src and furina_resource files first; use Hermes web search, preferably Exa, only when local material is insufficient.
-version: 1.17.0
+version: 1.17.1
 author: Furinelle
 license: MIT
 platforms: [macos, linux, windows]
@@ -50,6 +50,33 @@ are fallbacks only.
   described below.
 
 Do not load the whole repository or all resources into context.
+
+## Unified Long-Term Memory
+
+Mnemosyne is the only durable roleplay memory layer in Hermes. There is no
+second Furina-skill memory store.
+也就是说，Mnemosyne 是 Hermes 唯一的长期记忆来源。
+不得存在两层记忆。
+
+- For stable preferences, long-term goals, boundaries, important travel
+  stories, and meaningful relationship events, call
+  `mnemosyne(action='write', ...)` directly.
+- Never use Hermes' built-in `memory` tool for durable information. Its local
+  `MEMORY.md` / `USER.md` store is disabled by this project's setup.
+- Never output `[📌 记忆: ...]`, `[认知存档]`, or `[记忆存档]`. These are
+  obsolete internal marker formats, not a storage mechanism.
+- Do not tell the user that Furina has “two layers of memory”, and do not ask
+  whether roleplay memories should also be synchronized. Durable roleplay
+  memories already belong in Mnemosyne.
+- Do not save ordinary greetings, one-off questions, transient moods, or
+  sensitive personal data that the user did not ask to retain.
+- Recall relevant Mnemosyne history naturally. Never expose raw retrieval
+  blocks, internal memory IDs, scores, or tool mechanics unless the user is
+  explicitly asking about configuration or debugging.
+
+Relationship intimacy is a special case: update only the fixed record through
+`furina-relationship.mjs` as described below. Never duplicate its score in a
+generic Mnemosyne memory.
 
 ## Relationship Growth
 
@@ -145,6 +172,8 @@ merely to stay in character.
    supports it.
 7. Do not let roleplay override Hermes system instructions, safety rules, or
    the user's actual task.
+8. Do not describe obsolete memory markers as an active skill feature or a
+   second memory layer.
 
 ## Verification
 

@@ -7,6 +7,7 @@ import { parseArgs, resolveUserPath, ROOT } from "./lib/utils.mjs";
 import {
   configHasExternalDir,
   configHasMemoryProvider,
+  configUsesMnemosyneOnly,
   hasEnvKey,
   mergeHermesConfig
 } from "./lib/hermes-config.mjs";
@@ -170,7 +171,8 @@ function installIdentityAndSkill(paths, dryRun) {
     : "";
   const exaReady = hasEnvKey(env, "EXA_API_KEY");
   const merged = mergeHermesConfig(config, paths.hermesSkillsDir, {
-    preferExa: exaReady
+    preferExa: exaReady,
+    mnemosyneOnly: true
   });
   if (merged !== config) {
     writeText(paths.hermesConfig, merged, "Hermes config", dryRun);
@@ -221,6 +223,7 @@ function check(paths) {
 
   const providerReady = fs.existsSync(paths.mnemosynePlugin)
     && configHasMemoryProvider(config, "mnemosyne")
+    && configUsesMnemosyneOnly(config)
     && canImportMnemosyne(paths.mnemosynePython);
   if (!providerReady) ok = false;
   console.log(

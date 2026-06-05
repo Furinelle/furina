@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   configHasExternalDir,
   configHasMemoryProvider,
+  configUsesMnemosyneOnly,
   hasEnvKey,
   mergeHermesConfig
 } from "../scripts/lib/hermes-config.mjs";
@@ -25,6 +26,25 @@ describe("Hermes config merge", () => {
 
     assert.equal(configHasMemoryProvider(source, "mnemosyne"), true);
     assert.equal(configHasMemoryProvider(source, "auto"), false);
+  });
+
+  it("disables built-in memory while preserving the Mnemosyne provider", () => {
+    const source = [
+      "memory:",
+      "  memory_enabled: true",
+      "  user_profile_enabled: true",
+      "  nudge_interval: 10",
+      "  provider: mnemosyne",
+      ""
+    ].join("\n");
+
+    const merged = mergeHermesConfig(source, skillDir, { mnemosyneOnly: true });
+
+    assert.match(merged, /memory_enabled:\s*false/);
+    assert.match(merged, /user_profile_enabled:\s*false/);
+    assert.match(merged, /nudge_interval:\s*0/);
+    assert.match(merged, /provider:\s*mnemosyne/);
+    assert.equal(configUsesMnemosyneOnly(merged), true);
   });
 
   it("adds an external skill directory without changing unrelated config", () => {

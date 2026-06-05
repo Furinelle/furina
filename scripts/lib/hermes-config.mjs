@@ -79,6 +79,100 @@ export function configHasMemoryProvider(source, provider) {
   return false;
 }
 
+function memoryBlockRange(lines) {
+  let start = lines.findIndex((line) => /^memory:\s*(?:#.*)?$/.test(line));
+  const emptyIndex = lines.findIndex((line) => /^memory:\s*\{\s*\}\s*(?:#.*)?$/.test(line));
+  if (start === -1 && emptyIndex !== -1) start = emptyIndex;
+  if (start === -1) return null;
+
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trim() && !line.trimStart().startsWith("#") && leadingSpaces(line) === 0) {
+      end = index;
+      break;
+    }
+  }
+  return { start, end };
+}
+
+function memoryScalar(source, key) {
+  const lines = String(source || "").split(/\r?\n/);
+  const range = memoryBlockRange(lines);
+  if (!range) return "";
+  const escaped = String(key).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  for (let index = range.start + 1; index < range.end; index += 1) {
+    const match = lines[index].match(new RegExp(`^\\s+${escaped}:\\s*(.+?)\\s*(?:#.*)?$`));
+    if (match) return parseYamlScalar(match[1]);
+  }
+  return "";
+}
+
+export function configUsesMnemosyneOnly(source) {
+  return configHasMemoryProvider(source, "mnemosyne")
+    && memoryScalar(source, "memory_enabled") === "false"
+    && memoryScalar(source, "user_profile_enabled") === "false"
+    && memoryScalar(source, "nudge_interval") === "0";
+}
+
+function configureMnemosyneOnly(source) {
+  const original = String(source || "");
+  const eol = original.includes("\r\n") ? "\r\n" : "\n";
+  const hadFinalNewline = original.endsWith("\n") || original.length === 0;
+  const lines = original.split(/\r?\n/);
+  let range = memoryBlockRange(lines);
+
+  if (!range) {
+    const insertAt = lines.length > 0 && lines.at(-1) === "" ? lines.length - 1 : lines.length;
+    lines.splice(
+      insertAt,
+      0,
+      "memory:",
+      "  memory_enabled: false",
+      "  user_profile_enabled: false",
+      "  nudge_interval: 0",
+      "  provider: mnemosyne"
+    );
+    range = memoryBlockRange(lines);
+  } else if (/^memory:\s*\{\s*\}/.test(lines[range.start])) {
+    lines.splice(
+      range.start,
+      1,
+      "memory:",
+      "  memory_enabled: false",
+      "  user_profile_enabled: false",
+      "  nudge_interval: 0",
+      "  provider: mnemosyne"
+    );
+    range = memoryBlockRange(lines);
+  }
+
+  for (const [key, value] of [
+    ["memory_enabled", "false"],
+    ["user_profile_enabled", "false"],
+    ["nudge_interval", "0"],
+    ["provider", "mnemosyne"]
+  ]) {
+    range = memoryBlockRange(lines);
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const index = lines.findIndex(
+      (line, lineIndex) => lineIndex > range.start
+        && lineIndex < range.end
+        && new RegExp(`^\\s+${escaped}:`).test(line)
+    );
+    if (index === -1) {
+      lines.splice(range.end, 0, `  ${key}: ${value}`);
+    } else {
+      const comment = lines[index].match(/\s+(#.*)$/)?.[1];
+      lines[index] = `  ${key}: ${value}${comment ? ` ${comment}` : ""}`;
+    }
+  }
+
+  let merged = lines.join(eol);
+  if (hadFinalNewline && !merged.endsWith(eol)) merged += eol;
+  return merged;
+}
+
 function mergeExternalSkillDir(source, externalDir) {
   const original = String(source || "");
   if (configHasExternalDir(original, externalDir)) return original;
@@ -196,7 +290,10 @@ function preferExaSearch(source) {
 
 export function mergeHermesConfig(source, externalDir, options = {}) {
   const withSkill = mergeExternalSkillDir(source, externalDir);
-  return options.preferExa ? preferExaSearch(withSkill) : withSkill;
+  const withMemory = options.mnemosyneOnly
+    ? configureMnemosyneOnly(withSkill)
+    : withSkill;
+  return options.preferExa ? preferExaSearch(withMemory) : withMemory;
 }
 
 export function hasEnvKey(source, key) {

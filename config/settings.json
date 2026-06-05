@@ -20,6 +20,9 @@
     "preferred_search_backend": "exa",
     "preserve_existing_backend": true,
     "memory_provider": "mnemosyne",
+    "builtin_memory_enabled": false,
+    "builtin_user_profile_enabled": false,
+    "builtin_memory_nudge_interval": 0,
     "setup": "scripts/setup.mjs"
   },
   "relationship_memory": {

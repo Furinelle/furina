@@ -89,6 +89,20 @@ hermes -z "请用一句话介绍你自己。"
 
 ## 6. 关系记忆
 
+Hermes 的长期记忆统一使用 Mnemosyne。安装器会设置：
+
+```yaml
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+  nudge_interval: 0
+  provider: mnemosyne
+```
+
+这会停止内置 `MEMORY.md` / `USER.md` 注入和后台记忆提醒。Skill 对稳定偏好、
+重要见闻和关系互动直接调用 `mnemosyne(action='write')`，不会输出候选记忆
+标记，也不存在第二套 Furina Skill 记忆。
+
 Mnemosyne 固定记录 `preference-furina-intimacy` 是 Hermes 的唯一权威关系
 状态。固定 ID 采用原子覆盖，不会产生多份不同分数。
 

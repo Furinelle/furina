@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.17.1] - 2026-06-05
+
+### Fixed
+- 修复 Hermes 仍把旧版 `[📌 记忆]` 标记描述为第二层记忆的问题
+- Hermes 角色互动、用户偏好与重要经历统一通过记忆工具写入 Mnemosyne；
+  亲密度继续只使用固定记录 `preference-furina-intimacy`
+
 ## [1.17.0] - 2026-06-05
 
 ### Added

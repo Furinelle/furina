@@ -64,6 +64,9 @@ describe("Hermes setup target", () => {
     assert.match(config, new RegExp(JSON.stringify(path.join(repoRoot, "hermes", "skills"))));
     assert.match(config, /search_backend:\s*exa/);
     assert.match(config, /memory:\n(?:[\s\S]*?\n)?\s+provider:\s*mnemosyne/);
+    assert.match(config, /memory_enabled:\s*false/);
+    assert.match(config, /user_profile_enabled:\s*false/);
+    assert.match(config, /nudge_interval:\s*0/);
     assert.ok(fs.existsSync(path.join(hermesHome, "plugins", "mnemosyne", "__init__.py")));
 
     const relationship = fs.readFileSync(

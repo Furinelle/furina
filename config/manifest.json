@@ -1,6 +1,6 @@
 {
   "id": "furina-hermes-agent-skill",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "branch": "codex/hermes-furina-adapter",
   "platform": "hermes-agent",
   "name": "芙宁娜 · Hermes Agent Skill",
