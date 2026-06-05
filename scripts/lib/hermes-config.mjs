@@ -65,6 +65,20 @@ export function configHasExternalDir(source, externalDir) {
   return externalDirsFromConfig(source).some((candidate) => samePath(candidate, externalDir));
 }
 
+export function configHasMemoryProvider(source, provider) {
+  const lines = String(source || "").split(/\r?\n/);
+  const memoryIndex = lines.findIndex((line) => /^memory:\s*(?:#.*)?$/.test(line));
+  if (memoryIndex === -1) return false;
+
+  for (let index = memoryIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trim() && !line.trimStart().startsWith("#") && leadingSpaces(line) === 0) break;
+    const match = line.match(/^\s+provider:\s*(.+?)\s*(?:#.*)?$/);
+    if (match) return parseYamlScalar(match[1]) === provider;
+  }
+  return false;
+}
+
 function mergeExternalSkillDir(source, externalDir) {
   const original = String(source || "");
   if (configHasExternalDir(original, externalDir)) return original;

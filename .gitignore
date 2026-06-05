@@ -4,6 +4,8 @@ node_modules/
 *.log
 *.swp
 *.swo
+__pycache__/
+*.pyc
 Thumbs.db
 .claude/settings.local.json
 .claude/skills/ui-ux-pro-max/

@@ -10,65 +10,31 @@
   },
   "context_window": {
     "max_history_turns": 20,
-    "furina_resource_note": "furina_resource/ 包含结构化知识库，AI 按需参照 00_index.md 检索对应文件。",
-    "external_lore_note": "furina_resource/ 未覆盖的原神细节由 agent 自带的联网搜索按需补查；Hermes 优先使用可用的 Exa，并保留其他已配置后端作为回退。回复中应标注参考资料/推断。"
+    "furina_resource_note": "先读 furina_resource/00_index.md，每轮只开 1-2 个直接相关文件。",
+    "external_lore_note": "本地资料不足时使用 Hermes web_search/web_extract；Exa 可用时优先 Exa，并标注外部资料与推断。"
   },
   "hermes": {
     "soul": "hermes/SOUL.md",
     "skills_dir": "hermes/skills",
     "resource_strategy": "external_dir_local_first",
     "preferred_search_backend": "exa",
-    "set_preference_when_key_available": true,
-    "preserve_existing_backend": true
+    "preserve_existing_backend": true,
+    "memory_provider": "mnemosyne",
+    "setup": "scripts/setup.mjs"
   },
-  "memory": {
-    "enabled": true,
-    "schema_version": "2.0",
-    "runtime": "scripts/furina-memory.mjs",
-    "default_path": "~/.claude/furina-memory.json",
-    "max_memories": 24,
-    "max_injected_memories": 5,
-    "max_notes": 12,
+  "relationship_memory": {
+    "authority": "mnemosyne",
+    "scope": "global",
+    "id": "preference-furina-intimacy",
+    "runtime": "scripts/furina-relationship.mjs",
     "intimacy_range": [0, 10],
     "intimacy_default": 0,
-    "soul_states": ["low", "calm", "active", "excited"],
-    "soul_state_default": "calm",
-    "reflection_model": "small",
-    "reflection_max_tokens": 512,
-    "memory_tag_prefix": "📌 记忆",
-    "memory_per_reply_limit": 1,
-    "active_recall": {
-      "enabled": true,
-      "top_k": 5,
-      "min_relevance": 0.35,
-      "avoid_for_casual_greeting": true
-    },
-    "proactive_recall": {
-      "enabled": true,
-      "min_intimacy": 6,
-      "cooldown_turns": 8,
-      "max_per_reply": 1
-    },
-    "sleep_consolidation": {
-      "enabled": true,
-      "trigger_pending_count": 8,
-      "soft_target_core_memories": 8,
-      "hard_max_memories": 24,
-      "decay_weak_after_days": 30
-    },
-    "soul_energy": {
-      "recall_depth_default": 35,
-      "impression_depth_default": 35,
-      "expression_desire_default": 45,
-      "creativity_default": 55,
-      "min": 0,
-      "max": 100
-    },
-    "interaction_state": {
-      "states": ["not_present", "summoned", "getting_familiar", "observation"],
-      "default": "not_present",
-      "observation_turns": 2,
-      "getting_familiar_cooldown_turns": 6
+    "ordinary_chat_auto_increment": false,
+    "stages": {
+      "0-4": "stage_distance",
+      "5-6": "sincere_opening",
+      "7-8": "accept_reserved",
+      "9-10": "accept_openly"
     }
   },
   "safety": {

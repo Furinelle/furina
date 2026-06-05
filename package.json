@@ -1,12 +1,12 @@
 {
-  "name": "furina-de-fontaine-roleplay",
-  "version": "1.16.0",
+  "name": "furina-hermes-agent-skill",
+  "version": "1.17.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
   },
-  "description": "Furina de Fontaine roleplay resource pack for Claude Code, Codex, Hermes Agent, and custom AI runtimes.",
+  "description": "Hermes Agent-specific Furina identity, skill, resources, and Mnemosyne relationship memory.",
   "repository": "https://github.com/Furinelle/furina",
   "license": "MIT"
 }

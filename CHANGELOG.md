@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-06-05
+
+### Added
+- 新增 Mnemosyne 固定关系记录 `preference-furina-intimacy` 与
+  `scripts/furina-relationship.mjs`，为 Hermes 提供唯一权威的 0-10
+  亲密度和告白分支
+- Hermes 安装器可自动安装/启用 Mnemosyne provider，并支持显式一次性旧
+  JSON 迁移
+
+### Changed
+- 当前分支调整为 Hermes Agent 专版，只保留 Hermes SOUL、Skill、安装、
+  关系记忆和共享角色资料
+- README、配置手册、manifest 与 settings 改为 Hermes-only
+
+### Removed
+- 从 Hermes 分支移除 Claude Code、Codex 适配目录及旧 JSON 记忆运行时；
+  对应平台继续由各自分支维护
+
 ## [1.16.0] - 2026-06-05
 
 ### Added

@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import {
   configHasExternalDir,
+  configHasMemoryProvider,
   hasEnvKey,
   mergeHermesConfig
 } from "../scripts/lib/hermes-config.mjs";
@@ -10,6 +11,22 @@ import {
 const skillDir = path.resolve("/tmp/furina/hermes/skills");
 
 describe("Hermes config merge", () => {
+  it("detects the provider only inside the memory block", () => {
+    const source = [
+      "model:",
+      "  provider: deepseek",
+      "memory:",
+      "  memory_enabled: true",
+      "  provider: mnemosyne",
+      "delegation:",
+      "  provider: auto",
+      ""
+    ].join("\n");
+
+    assert.equal(configHasMemoryProvider(source, "mnemosyne"), true);
+    assert.equal(configHasMemoryProvider(source, "auto"), false);
+  });
+
   it("adds an external skill directory without changing unrelated config", () => {
     const source = [
       "model:",

@@ -58,9 +58,9 @@ describe("canonical Furina characterization", () => {
   });
 
   it("keeps local resources first and external facts explicitly sourced", () => {
-    const codexSkill = read("codex/skills/furina-roleplay/SKILL.md");
-    assert.match(codexSkill, /先读仓库根目录 `furina_resource\/00_index\.md`/);
-    assert.match(codexSkill, /优先权威原神来源/);
-    assert.match(codexSkill, /参考资料显示|据外部资料/);
+    const hermesSkill = read("hermes/skills/furina-roleplay/SKILL.md");
+    assert.match(hermesSkill, /furina_resource\/00_index\.md/);
+    assert.match(hermesSkill, /Prefer official Genshin Impact|HoYoverse/);
+    assert.match(hermesSkill, /外部资料显示|根据官方页面/);
   });
 });

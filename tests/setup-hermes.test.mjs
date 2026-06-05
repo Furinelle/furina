@@ -10,20 +10,33 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const setupPath = path.join(repoRoot, "scripts", "setup.mjs");
 const sourceSoul = fs.readFileSync(path.join(repoRoot, "hermes", "SOUL.md"), "utf8");
 const hermesHome = fs.mkdtempSync(path.join(os.tmpdir(), "furina-hermes-"));
+const mnemosyneHome = fs.mkdtempSync(path.join(os.tmpdir(), "furina-mnemosyne-"));
+const legacyPath = path.join(hermesHome, "furina-memory.json");
 
 function runSetup(...args) {
-  return spawnSync(process.execPath, [setupPath, ...args], {
+  return spawnSync(process.execPath, [
+    setupPath,
+    ...args,
+    "--legacy-memory-path",
+    legacyPath
+  ], {
     cwd: repoRoot,
-    encoding: "utf8"
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      MNEMOSYNE_HOME: mnemosyneHome
+    }
   });
 }
 
 after(() => {
   fs.rmSync(hermesHome, { recursive: true, force: true });
+  fs.rmSync(mnemosyneHome, { recursive: true, force: true });
 });
 
 describe("Hermes setup target", () => {
   it("backs up SOUL.md and merges the repository skill directory", () => {
+    fs.writeFileSync(legacyPath, `${JSON.stringify({ intimacy: 6 })}\n`);
     fs.writeFileSync(path.join(hermesHome, "SOUL.md"), "# Previous identity\n");
     fs.writeFileSync(
       path.join(hermesHome, "config.yaml"),
@@ -39,7 +52,7 @@ describe("Hermes setup target", () => {
     );
     fs.writeFileSync(path.join(hermesHome, ".env"), "EXA_API_KEY=test-only\n");
 
-    const result = runSetup("--hermes", "--hermes-home", hermesHome);
+    const result = runSetup("--hermes-home", hermesHome);
     assert.equal(result.status, 0, result.stderr || result.stdout);
 
     assert.equal(fs.readFileSync(path.join(hermesHome, "SOUL.md"), "utf8"), sourceSoul);
@@ -50,22 +63,32 @@ describe("Hermes setup target", () => {
     assert.match(config, /custom:\n  keep_me: true/);
     assert.match(config, new RegExp(JSON.stringify(path.join(repoRoot, "hermes", "skills"))));
     assert.match(config, /search_backend:\s*exa/);
+    assert.match(config, /memory:\n(?:[\s\S]*?\n)?\s+provider:\s*mnemosyne/);
+    assert.ok(fs.existsSync(path.join(hermesHome, "plugins", "mnemosyne", "__init__.py")));
+
+    const relationship = fs.readFileSync(
+      path.join(mnemosyneHome, "working", "preference-furina-intimacy.md"),
+      "utf8"
+    );
+    assert.match(relationship, /furina_intimacy: 6/);
   });
 
   it("is idempotent and passes the Hermes-only check", () => {
     const beforeConfig = fs.readFileSync(path.join(hermesHome, "config.yaml"), "utf8");
     const beforeBackups = fs.readdirSync(hermesHome).filter((name) => name.startsWith("SOUL.md.bak-"));
 
-    const install = runSetup("--hermes", "--hermes-home", hermesHome);
+    const install = runSetup("--hermes-home", hermesHome);
     assert.equal(install.status, 0, install.stderr || install.stdout);
     assert.equal(fs.readFileSync(path.join(hermesHome, "config.yaml"), "utf8"), beforeConfig);
 
     const afterBackups = fs.readdirSync(hermesHome).filter((name) => name.startsWith("SOUL.md.bak-"));
     assert.deepEqual(afterBackups, beforeBackups);
 
-    const check = runSetup("--check", "--hermes", "--hermes-home", hermesHome);
+    const check = runSetup("--check", "--hermes-home", hermesHome);
     assert.equal(check.status, 0, check.stderr || check.stdout);
     assert.match(check.stdout, /ok\s+Hermes SOUL\.md/);
     assert.match(check.stdout, /ok\s+Hermes external skill directory/);
+    assert.match(check.stdout, /ok\s+Hermes Mnemosyne provider/);
+    assert.match(check.stdout, /ok\s+Hermes Furina relationship state/);
   });
 });

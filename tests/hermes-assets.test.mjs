@@ -50,5 +50,13 @@ describe("Hermes Furina skill", () => {
     assert.match(skill, /任务优先|准确.*优先/);
     assert.match(skill, /不要.*舞台腔|收敛.*戏剧|不强行.*角色腔/);
   });
-});
 
+  it("uses Mnemosyne as the sole Hermes relationship authority", () => {
+    const skill = read("hermes/skills/furina-roleplay/SKILL.md");
+    assert.match(skill, /furina-relationship\.mjs status --format inject/);
+    assert.match(skill, /Mnemosyne/);
+    assert.match(skill, /唯一.*权威|sole.*authority/i);
+    assert.match(skill, /furina-memory\.json/);
+    assert.match(skill, /不要.*读取|do not read/i);
+  });
+});
