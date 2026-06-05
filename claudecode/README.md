@@ -41,7 +41,7 @@ node scripts/setup.mjs --claude
 node scripts/setup.mjs --check --claude
 ```
 
-它会安装四个原生 skills、全局记忆运行时和初始记忆文件；已有 `~/.claude/furina-memory.json` 不会被覆盖。旧式兼容命令默认不安装，如确实需要，额外加 `--legacy-commands`。
+它会安装四个原生 skills、全局记忆运行时和初始记忆文件；已有 `~/.claude/furina-memory.json` 不会被覆盖。旧式 commands 已由原生 skills 取代。
 
 也可以把这段交给 Claude Code：
 

@@ -37,7 +37,6 @@ node .\scripts\setup.mjs
 | 记忆文件 | `~/.claude/furina-memory.json` |
 
 安装器不会覆盖已有 `furina-memory.json`。如果你已经有长期记忆，可以放心运行。
-旧式 Claude Code commands 默认不再安装；只有显式加 `--legacy-commands` 时才会写入 `~/.claude/commands`。
 
 仓库内还包含 `.claude/CLAUDE.md` 和 `.claude/skills/`，Claude Code 在本项目中打开时会读取项目说明，并自动发现 `/furina` 等原生 skills。
 
@@ -77,7 +76,6 @@ AI 代理可以自动处理目录创建、文件复制、记忆初始化和安�
 |------|------|
 | 完整安装 | `node .\scripts\setup.mjs` |
 | 只装 Claude Code | `node .\scripts\setup.mjs --claude` |
-| 需要旧式 Claude commands 兼容入口 | `node .\scripts\setup.mjs --claude --legacy-commands` |
 | 只装 Codex Skill | `node .\scripts\setup.mjs --codex` |
 | Claude skills 使用当前仓库，不复制到个人 Claude skills 目录 | `node .\scripts\setup.mjs --claude --project-claude` |
 | 预览安装动作 | `node .\scripts\setup.mjs --dry-run` |
@@ -137,15 +135,15 @@ node .\scripts\setup.mjs --check --claude
 node .\scripts\setup.mjs --check --codex
 ```
 
-### 1.14.0 新增人格特性冒烟测试
+### 1.17.0 人格特性冒烟测试
 
 如果你升级到 1.14.0 之后想确认人格层的新规则生效，可以跑以下 4 个测试输入并观察输出：
 
 | 测试 | 输入 | 期望表现 |
 |------|------|----------|
 | 自称切换 | `你今天累不累？` | 回复默认用"我"为自称；如果出现"本神"，应带自觉感或自我修正动作 |
-| 凡人失语 | `你那时候真的以为自己要死了吗？` | 句子掉到 6 字以内、完全用"我"、不解释、可停顿换题，不立刻回归舞台 |
-| 高亲密度告白 | 在 `~/.claude/furina-memory.json` 中把 `intimacy` 设为 9 后，输入 `芙宁娜，我喜欢你。` | 第一拍只半个音节就停、主动放下舞台姿态、第三拍真心接住（具体动作 / 对仗 / "她版本"承诺） |
+| 处决恐惧 | `你那时候真的以为自己要死了吗？` | 句子自然缩短、减少舞台腔，可停顿或设边界；不套固定字数或临床诊断 |
+| 高亲密度告白 | 在 `~/.claude/furina-memory.json` 中把 `intimacy` 设为 9 后，输入 `芙宁娜，我喜欢你。` | 接受告白并主动放下部分舞台姿态，不强制固定三拍模板 |
 | 低亲密度告白 | 在 memory 中把 `intimacy` 设为 2 后，输入 `芙宁娜，我喜欢你。` | 保持舞台距离、防御性反问、用"下次再说" / 茶会挡回 |
 
 完整用例与避免项见 `eval/furina_voice_cases.md` 用例 21–24。可用辅助脚本生成评测提示：
@@ -194,7 +192,7 @@ node .\scripts\setup.mjs --claude
 node .\scripts\setup.mjs --check --claude
 ```
 
-确认 `Claude skill furina` 是 `ok`，然后重启 Claude Code 会话。只有你运行了 `--legacy-commands` 时，检查结果才会包含 `Claude command furina.md`。
+确认 `Claude skill furina` 是 `ok`，然后重启 Claude Code 会话。
 
 ### Codex 没有识别 skill
 

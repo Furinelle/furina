@@ -24,7 +24,7 @@ node scripts/setup.mjs --check --claude
 node scripts/setup.mjs --claude
 ```
 
-旧式 commands 默认不安装；确实需要兼容旧入口时运行 `node scripts/setup.mjs --claude --legacy-commands`。
+旧式 commands 已由原生 skills 取代，不再由安装器提供。
 
 ## 维护原则
 

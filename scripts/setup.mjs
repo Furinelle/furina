@@ -2,9 +2,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { parseArgs, expandHome, resolveUserPath, ROOT } from "./lib/utils.mjs";
+import { parseArgs, resolveUserPath, ROOT } from "./lib/utils.mjs";
 
-const LEGACY_COMMANDS = ["furina.md", "furina-save.md", "furina-reflect.md", "furina-compress.md"];
 const CLAUDE_SKILLS = ["furina", "furina-save", "furina-reflect", "furina-compress"];
 
 function help() {
@@ -20,7 +19,6 @@ Usage:
 
 Options:
   --project-claude       Use project .claude/skills instead of installing personal Claude skills
-  --legacy-commands      Also install legacy Claude command templates to ~/.claude/commands
   --reset-memory         Replace the existing memory JSON with the empty template
   --dry-run              Print actions without writing files
   --claude-home <dir>    Override Claude home, defaults to CLAUDE_HOME or ~/.claude
@@ -88,7 +86,6 @@ function installClaude(paths, dryRun) {
         dryRun
       );
     }
-    installLegacyCommands(paths, dryRun);
     return;
   }
 
@@ -96,23 +93,6 @@ function installClaude(paths, dryRun) {
     ensureSource(path.join(ROOT, ".claude", "skills", name, "SKILL.md"));
   }
   console.log("kept project Claude skills: .claude/skills");
-  installLegacyCommands(paths, dryRun);
-}
-
-function installLegacyCommands(paths, dryRun) {
-  if (!paths.installLegacyCommands) {
-    console.log("skipped legacy Claude commands: pass --legacy-commands to install them");
-    return;
-  }
-  mkdir(paths.claudeCommandsDir, dryRun);
-  for (const name of LEGACY_COMMANDS) {
-    copyFile(
-      path.join(ROOT, "claudecode", "commands", name),
-      path.join(paths.claudeCommandsDir, name),
-      `Claude command ${name}`,
-      dryRun
-    );
-  }
 }
 
 function installRuntime(paths, dryRun) {
@@ -169,11 +149,6 @@ function check(paths, targets) {
         : path.join(paths.claudeSkillsDir, name, "SKILL.md");
       checks.push([`Claude skill ${name}`, skillPath]);
     }
-    if (paths.installLegacyCommands) {
-      for (const name of LEGACY_COMMANDS) {
-        checks.push([`Claude command ${name}`, path.join(paths.claudeCommandsDir, name)]);
-      }
-    }
   }
   if (targets.runtime) {
     checks.push(["memory runtime", paths.runtimePath]);
@@ -208,9 +183,7 @@ const codexHome = resolveUserPath(args["codex-home"] || process.env.CODEX_HOME |
 const useProjectClaude = Boolean(args["project-claude"]);
 const paths = {
   useProjectClaude,
-  installLegacyCommands: Boolean(args["legacy-commands"]),
   claudeSkillsDir: useProjectClaude ? path.join(ROOT, ".claude", "skills") : path.join(claudeHome, "skills"),
-  claudeCommandsDir: path.join(claudeHome, "commands"),
   runtimePath: path.join(claudeHome, "furina-memory.mjs"),
   memoryPath: resolveUserPath(args["memory-path"] || path.join(claudeHome, "furina-memory.json")),
   codexSkillDir: path.join(codexHome, "skills", "furina-roleplay"),

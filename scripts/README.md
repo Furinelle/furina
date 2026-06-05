@@ -4,7 +4,7 @@
 
 `furina-eval.mjs` 是语气验收辅助脚本，用于解析 `eval/furina_voice_cases.md` 并生成稳定的人工评测提示；它不会调用模型或访问外部服务。
 
-`setup.mjs` 是一键安装器，用来自动安装 Claude Code 原生 skills、Codex Skill、全局记忆运行时和初始记忆文件，并为 Codex 写入指向仓库 `furina_resource/` 的轻量路径上下文。旧式 Claude commands 只会在显式传入 `--legacy-commands` 时安装。
+`setup.mjs` 是一键安装器，用来自动安装 Claude Code 原生 skills、Codex Skill、全局记忆运行时和初始记忆文件，并为 Codex 写入指向仓库 `furina_resource/` 的轻量路径上下文。
 
 ## 一键安装
 
@@ -19,7 +19,6 @@ node scripts/setup.mjs --check
 node scripts/setup.mjs --claude
 node scripts/setup.mjs --codex
 node scripts/setup.mjs --project-claude
-node scripts/setup.mjs --legacy-commands
 node scripts/setup.mjs --check --claude
 node scripts/setup.mjs --check --codex
 node scripts/setup.mjs --dry-run

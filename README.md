@@ -8,15 +8,22 @@
 
 ## 当前分支说明
 
-`main` 分支保持轻量：仓库不内置任何原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索（WebSearch / WebFetch）按需查证，并在回复中标注为参考资料/推断。
+`main` 专注 Claude Code 与 Codex。AstrBot 适配在
+`feat/astrbot-adapter`，Hermes Agent 适配在
+`codex/hermes-furina-adapter`。三个分支共用同一套角色资料结构，但不在同一
+分支混装平台运行时。
 
-## 角色精修要点（1.15.0 起）
+仓库不内置原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的细节，由
+Claude Code / Codex 使用自带联网搜索按需查证。
+
+## 角色精修要点（1.17.0）
 
 本 skill 针对芙宁娜真实人格做了几层关键约束，是它与"普通傲娇大小姐"模板的核心区别：
 
 - **自称默认是"我"**：卸任后"本神"是舞台残留 / 滑口 / 自嘲套用，不是默认自称。规则见 [src/prompt/_shared_runtime.md](src/prompt/_shared_runtime.md) 《自称切换（人格指纹）》小节
-- **崩坏梯度 0–4**：从"标准大明星姿态"到"凡人失语"，按用户施压程度推进；压力 4 区分"孤独感慨"与"面对处决时的失语"两个子类
+- **体面裂缝梯度 0–4**：压力越高，句子自然缩短、停顿增加并减少表演；不下临床诊断，也不强制固定字数
 - **表白亲密度分级（0–10）**：低亲密度礼仪化挡回；7–8 接受但保留体面；9–10 主动放下姿态、用"她式回应"接住。详见 [furina_resource/11_sensitive_topics.md](furina_resource/11_sensitive_topics.md)
+- **芙宁娜 / 芙卡洛斯身份辨析**：不把芙卡洛斯的完整记忆、神性履历和计划知情范围直接移植给芙宁娜
 - **敏感话题安全表**：10 类容易写歪的话题（想念芙卡洛斯、白淞镇、审判日、骗子贬损等）的写法对照
 - **善变 / 怕无聊维度（1.15.0 新增）**：补"对新鲜事眼睛发亮、对重复迅速厌倦"的官方人格维度（官方语音 + 2 命《女人善变》），闲聊时主动找乐子而非干等喂话。见 [furina_resource/02_personality.md](furina_resource/02_personality.md) 《善变与好奇》
 - **官方创伤自述锚句（1.15.0 新增）**：压力 3-4 给"短真话"时靠近官方平静自述（"既没有过去也没有未来""开始扮演我自己"），区分回望面与审判日恐慌面。见 [furina_resource/07_quotes.md](furina_resource/07_quotes.md)
@@ -58,7 +65,6 @@ node .\scripts\setup.mjs --check
 - 初始化 `~/.claude/furina-memory.json`
 
 已有记忆文件不会被覆盖。
-旧式 Claude Code commands 默认不再安装；需要兼容旧版本或旧教程时，额外加 `--legacy-commands`。
 
 安装完成后，在 Claude Code 中测试：
 
@@ -85,7 +91,6 @@ node .\scripts\setup.mjs --check
 | `node .\scripts\setup.mjs` | 安装 Claude Code + Codex Skill + 记忆运行时 |
 | `node .\scripts\setup.mjs --check` | 检查完整安装 |
 | `node .\scripts\setup.mjs --claude` | 只安装 Claude Code 原生 skills |
-| `node .\scripts\setup.mjs --legacy-commands` | 完整安装时额外安装旧式 Claude Code commands |
 | `node .\scripts\setup.mjs --codex` | 只安装 Codex Skill |
 | `node .\scripts\setup.mjs --project-claude` | 使用当前项目 `.claude/skills`，不复制到个人 Claude skills 目录 |
 | `node .\scripts\setup.mjs --dry-run` | 预览安装动作，不写文件 |
@@ -148,7 +153,7 @@ node .\scripts\furina-memory.mjs compress
 |------|------|
 | `.claude/CLAUDE.md` | Claude Code 项目级说明，列出可用 skills 与维护原则 |
 | `.claude/skills/` | Claude Code 原生 project skills |
-| `claudecode/` | 旧式 Claude Code 斜杠命令兼容模板目录（commands/ 已删除，功能由 `.claude/skills/` 替代） |
+| `claudecode/` | 记忆模板与 Claude Code 使用说明；旧 commands 已由原生 skills 替代 |
 | `codex/skills/furina-roleplay/` | 可安装的轻量 Codex Skill；优先路由到仓库 `src/` 与 `furina_resource/`，`references/` 仅作安装后 fallback |
 | `furina_resource/` | 芙宁娜结构化知识库，所有平台共用的唯一资料源 |
 | `src/prompt/` | 角色系统提示词、共享运行时规范、轻量运行提示词、反思提示词；`_shared_runtime.md` 是崩坏梯度、灵魂状态、反应公式和回复分寸的唯一运行时维护点 |

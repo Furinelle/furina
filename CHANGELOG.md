@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-06-05
+
+### Changed
+- `main` 明确专注 Claude Code 与 Codex；AstrBot 和 Hermes 由各自分支维护
+- 同步最新芙宁娜/芙卡洛斯身份辨析、秘密调查边界与自然创伤表达
+- 保留同人长期关系成长：高亲密度明确接受告白，不强制固定三拍模板
+- 更新 Claude/Codex skills、Codex references、README 与配置手册
+
+### Removed
+- 移除已无对应模板文件的 `--legacy-commands` 安装入口
+
 ## [1.15.0] - 2026-06-05
 
 ### Added
