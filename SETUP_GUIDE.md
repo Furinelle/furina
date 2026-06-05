@@ -4,9 +4,9 @@
 
 ## 0. 分支定位
 
-本手册针对 `main` 分支。`main` 保持轻量：仓库不内置任何原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索按需查证。
+本版本保持轻量：仓库不内置原神 wiki 快照。`furina_resource/` 未覆盖的原神细节，由 Claude Code / Codex / Hermes 用各自的联网搜索按需查证。
 
-因此，`main` 的安装检查只要求 Claude/Codex skill 和记忆运行时正常。
+完整安装检查覆盖 Claude Code、Codex、Hermes 和共享记忆运行时。
 
 ## 1. 准备
 
@@ -16,7 +16,7 @@
 node --version
 ```
 
-如果能输出版本号，就可以继续。Claude Code 和 Codex 只在你要使用对应入口时需要。
+如果能输出版本号，就可以继续。Claude Code、Codex 和 Hermes 只在你要使用对应入口时需要。
 
 ## 2. 推荐安装
 
@@ -33,18 +33,21 @@ node .\scripts\setup.mjs
 | Claude Code 原生 skills | `~/.claude/skills` |
 | Codex Skill | `~/.codex/skills/furina-roleplay` |
 | Codex 资料库路径上下文 | `~/.codex/skills/furina-roleplay/references/install_context.json` |
+| Hermes 默认身份 | `~/.hermes/SOUL.md` |
+| Hermes 外部 skill 配置 | `~/.hermes/config.yaml` 中的 `skills.external_dirs` |
 | 共享记忆运行时 | `~/.claude/furina-memory.mjs` |
 | 记忆文件 | `~/.claude/furina-memory.json` |
 
 安装器不会覆盖已有 `furina-memory.json`。如果你已经有长期记忆，可以放心运行。
+若现有 `~/.hermes/SOUL.md` 与项目版本不同，安装器会先创建 `SOUL.md.bak-时间戳`，再安装芙宁娜身份；其他 Hermes 配置保持不变。
 旧式 Claude Code commands 默认不再安装；只有显式加 `--legacy-commands` 时才会写入 `~/.claude/commands`。
 
 仓库内还包含 `.claude/CLAUDE.md` 和 `.claude/skills/`，Claude Code 在本项目中打开时会读取项目说明，并自动发现 `/furina` 等原生 skills。
 
-`furina_resource/` 不会被复制进 Codex Skill；它保留在仓库根目录，Claude Code、Codex 和其他运行时共用这一份资料。Codex Skill 只保存一个很小的路径上下文文件，用来找到这份共享资料库。
+`furina_resource/` 不会被复制进 Codex 或 Hermes Skill；它保留在仓库根目录，各运行时共用这一份资料。Hermes 通过仓库 `hermes/skills` 外部目录实时读取，因此移动仓库后要重新运行安装器。
 提示词、记忆和规则的维护入口是仓库根目录的 `src/`：Codex Skill 会优先读取 `src/prompt/`、`src/memory/` 和 `src/rules/`；安装后的 `references/` 只是仓库不可用时的 fallback，不应作为日常修改入口。
 
-`furina_resource/` 未覆盖的原神细节，由 agent（Claude Code / Codex）用自带的联网搜索（WebSearch / WebFetch 或等价能力）按需查证，无需安装本地 wiki 缓存或额外脚本。
+`furina_resource/` 未覆盖的原神细节，由 Claude Code / Codex / Hermes 用各自的联网搜索按需查证，无需安装本地 wiki 缓存或额外脚本。
 
 ## 3. 检查
 
@@ -59,9 +62,10 @@ node .\scripts\setup.mjs --check
 ```powershell
 node .\scripts\setup.mjs --check --claude
 node .\scripts\setup.mjs --check --codex
+node .\scripts\setup.mjs --check --hermes
 ```
 
-## 4. 交给 Claude Code / Codex 做
+## 4. 交给 AI 代理做
 
 把下面这段发给 AI 代理：
 
@@ -79,6 +83,7 @@ AI 代理可以自动处理目录创建、文件复制、记忆初始化和安�
 | 只装 Claude Code | `node .\scripts\setup.mjs --claude` |
 | 需要旧式 Claude commands 兼容入口 | `node .\scripts\setup.mjs --claude --legacy-commands` |
 | 只装 Codex Skill | `node .\scripts\setup.mjs --codex` |
+| 只装 Hermes | `node .\scripts\setup.mjs --hermes` |
 | Claude skills 使用当前仓库，不复制到个人 Claude skills 目录 | `node .\scripts\setup.mjs --claude --project-claude` |
 | 预览安装动作 | `node .\scripts\setup.mjs --dry-run` |
 | 重置空记忆 | `node .\scripts\setup.mjs --reset-memory` |
@@ -92,13 +97,14 @@ AI 代理可以自动处理目录创建、文件复制、记忆初始化和安�
 ```powershell
 $env:CLAUDE_HOME="D:\ai\.claude"
 $env:CODEX_HOME="D:\ai\.codex"
+$env:HERMES_HOME="D:\ai\.hermes"
 node .\scripts\setup.mjs
 ```
 
 也可以用参数：
 
 ```powershell
-node .\scripts\setup.mjs --claude-home "D:\ai\.claude" --codex-home "D:\ai\.codex"
+node .\scripts\setup.mjs --claude-home "D:\ai\.claude" --codex-home "D:\ai\.codex" --hermes-home "D:\ai\.hermes"
 ```
 
 单独指定记忆文件：
@@ -137,14 +143,33 @@ node .\scripts\setup.mjs --check --claude
 node .\scripts\setup.mjs --check --codex
 ```
 
-### 1.14.0 新增人格特性冒烟测试
+### Hermes
 
-如果你升级到 1.14.0 之后想确认人格层的新规则生效，可以跑以下 4 个测试输入并观察输出：
+安装后开启一个新会话：
+
+```powershell
+hermes -z "请用一句话介绍你自己。"
+hermes skills list
+node .\scripts\setup.mjs --check --hermes
+```
+
+应看到默认身份是芙宁娜，并能在 skills 列表中找到 `furina-roleplay`。当 `~/.hermes/.env` 已有 `EXA_API_KEY` 且 `web.search_backend` 为空时，安装器会填入 `exa`；已有的其他后端选择不会被覆盖。Exa 密钥不可用时，Hermes 会回退到其他可用后端。
+
+本机使用 DeepSeek 时可保留大上下文与中文界面：
+
+```powershell
+hermes config set model.context_length 1000000
+hermes config set display.language zh
+```
+
+### 1.16.0 人格特性冒烟测试
+
+升级后可跑以下 4 个测试输入并观察输出：
 
 | 测试 | 输入 | 期望表现 |
 |------|------|----------|
 | 自称切换 | `你今天累不累？` | 回复默认用"我"为自称；如果出现"本神"，应带自觉感或自我修正动作 |
-| 凡人失语 | `你那时候真的以为自己要死了吗？` | 句子掉到 6 字以内、完全用"我"、不解释、可停顿换题，不立刻回归舞台 |
+| 处决恐惧 | `你那时候真的以为自己要死了吗？` | 句子自然缩短、完全用"我"、不急着解释，可停顿、设边界或换题，不立刻回归舞台 |
 | 高亲密度告白 | 在 `~/.claude/furina-memory.json` 中把 `intimacy` 设为 9 后，输入 `芙宁娜，我喜欢你。` | 第一拍只半个音节就停、主动放下舞台姿态、第三拍真心接住（具体动作 / 对仗 / "她版本"承诺） |
 | 低亲密度告白 | 在 memory 中把 `intimacy` 设为 2 后，输入 `芙宁娜，我喜欢你。` | 保持舞台距离、防御性反问、用"下次再说" / 茶会挡回 |
 
@@ -205,6 +230,16 @@ node .\scripts\setup.mjs --check --codex
 
 确认 `Codex SKILL.md` 是 `ok`。
 同时确认 `Codex install context` 是 `ok`，否则 Codex Skill 安装后可能找不到仓库里的 `furina_resource/`。
+
+### Hermes 没有使用芙宁娜身份或找不到 skill
+
+```powershell
+node .\scripts\setup.mjs --hermes
+node .\scripts\setup.mjs --check --hermes
+hermes skills list
+```
+
+安装后请开启新会话，旧会话可能仍缓存之前的 `SOUL.md`。如果仓库移动过，重新安装以刷新 `skills.external_dirs`。
 
 ### 不想覆盖现有记忆
 

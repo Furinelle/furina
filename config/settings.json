@@ -11,7 +11,15 @@
   "context_window": {
     "max_history_turns": 20,
     "furina_resource_note": "furina_resource/ 包含结构化知识库，AI 按需参照 00_index.md 检索对应文件。",
-    "external_lore_note": "furina_resource/ 未覆盖的原神细节由 agent 自带的联网搜索（WebSearch/WebFetch）按需补查，并在回复中标注为参考资料/推断。"
+    "external_lore_note": "furina_resource/ 未覆盖的原神细节由 agent 自带的联网搜索按需补查；Hermes 优先使用可用的 Exa，并保留其他已配置后端作为回退。回复中应标注参考资料/推断。"
+  },
+  "hermes": {
+    "soul": "hermes/SOUL.md",
+    "skills_dir": "hermes/skills",
+    "resource_strategy": "external_dir_local_first",
+    "preferred_search_backend": "exa",
+    "set_preference_when_key_available": true,
+    "preserve_existing_backend": true
   },
   "memory": {
     "enabled": true,

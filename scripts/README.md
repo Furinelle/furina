@@ -4,7 +4,7 @@
 
 `furina-eval.mjs` 是语气验收辅助脚本，用于解析 `eval/furina_voice_cases.md` 并生成稳定的人工评测提示；它不会调用模型或访问外部服务。
 
-`setup.mjs` 是一键安装器，用来自动安装 Claude Code 原生 skills、Codex Skill、全局记忆运行时和初始记忆文件，并为 Codex 写入指向仓库 `furina_resource/` 的轻量路径上下文。旧式 Claude commands 只会在显式传入 `--legacy-commands` 时安装。
+`setup.mjs` 是一键安装器，用来自动安装 Claude Code、Codex、Hermes 默认身份、全局记忆运行时和初始记忆文件。Hermes 安装会备份不同的旧 `SOUL.md`，并把仓库 skill 目录合并进 `skills.external_dirs`。
 
 ## 一键安装
 
@@ -18,10 +18,12 @@ node scripts/setup.mjs --check
 ```bash
 node scripts/setup.mjs --claude
 node scripts/setup.mjs --codex
+node scripts/setup.mjs --hermes
 node scripts/setup.mjs --project-claude
 node scripts/setup.mjs --legacy-commands
 node scripts/setup.mjs --check --claude
 node scripts/setup.mjs --check --codex
+node scripts/setup.mjs --check --hermes
 node scripts/setup.mjs --dry-run
 node scripts/furina-eval.mjs list
 node scripts/furina-eval.mjs prompt --case 3
@@ -30,7 +32,7 @@ node scripts/furina-eval.mjs prompt --case 3
 ## 目标
 
 - 让 Codex 和 Claude Code 都使用同一份 `version: "2.0"` 认知记忆 JSON。
-- 让 Codex、Claude Code 和自定义运行时共用根目录 `furina_resource/`，避免在 skill 里维护知识库镜像。
+- 让 Codex、Claude Code、Hermes 和自定义运行时共用根目录 `furina_resource/`，避免在 skill 里维护知识库镜像。
 - 在需要补查外部原神资料时，用 agent 自带的联网搜索按需查证少量片段，而不是把整套 wiki 塞进上下文。
 - 提供 Angel Memory / Angel Heart 风格的基本能力：主动回忆、克制的主动投喂、记忆写入、睡眠巩固、弱记忆衰减、交互状态判断。
 - 避免每次对话都把完整记忆塞进上下文，只注入与当前话题相关的 3-5 条。

@@ -15,7 +15,7 @@ description: 芙宁娜角色扮演、设定问答、提示词维护、安装配�
 - 语气精修：仓库根目录 `furina_resource/05_voice_style.md`
 - 原作台词/破绽句式/语音：仓库根目录 `furina_resource/07_quotes.md` 或 `furina_resource/09_voice_lines.md`
 - 设定/剧情/关系/机制：先读仓库根目录 `furina_resource/00_index.md`，再开对应文件
-- **敏感话题 / 表白 / 强情感投射 / 创伤触发**：仓库根目录 `furina_resource/11_sensitive_topics.md`（含表白亲密度分级 0–10、"凡人失语"压力 4 子类、关系敏感话题分寸）；运行时规则配合读 `src/prompt/_shared_runtime.md` 的《自称切换》《压力 4 子类》小节
+- **敏感话题 / 表白 / 强情感投射 / 创伤触发**：仓库根目录 `furina_resource/11_sensitive_topics.md`（含表白亲密度分级 0–10、"处决恐惧"压力 4 子类、关系敏感话题分寸）；高亲密度应接受告白；运行时规则配合读 `src/prompt/_shared_runtime.md` 的《自称切换》《压力 4 子类》小节
 - **自称切换（本神 vs 我）**：仓库根目录 `src/prompt/_shared_runtime.md` 《自称切换（人格指纹）》小节——默认"我"，"本神"是卸任后的舞台残留 / 滑口 / 自嘲套用
 - 原神其他内容补查：`furina_resource/` 未覆盖的剧情/任务/语音/逸闻，用 agent/Codex 自带的联网搜索（WebSearch/WebFetch 或等价能力）查证，优先权威原神来源，只取所需片段
 - 记忆格式/注入：仓库根目录 `src/memory/memory_format.md`；若仓库不可用再读 `references/memory/memory_format.md`

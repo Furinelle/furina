@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-06-05
+
+### Added
+- 新增 `hermes/SOUL.md` 与 `hermes/skills/furina-roleplay/SKILL.md`，让 Hermes 默认以芙宁娜身份对话，并按需读取仓库资料
+- `scripts/setup.mjs` 新增 `--hermes` / `--hermes-home`，支持备份旧 SOUL、幂等合并 `skills.external_dirs`，并在 Exa 密钥存在且搜索后端为空时设置 Exa 优先
+- 新增角色内容、Hermes 资源、配置合并与安装器测试
+
+### Changed
+- 修正芙宁娜与芙卡洛斯身份、神之心、秘密调查和计划知情范围的表述
+- 创伤表达移除临床诊断与固定六字模板，改为自然缩短、停顿、回避或明确设边界
+- 舞台意象与告白三拍改为可选技巧；保留同人长期关系成长，高亲密度明确接受告白
+- Hermes 联网检索先查 `furina_resource/`，不足时优先使用可用的 Exa，并保留其他搜索后端回退
+
 ## [1.15.0] - 2026-06-05
 
 ### Added

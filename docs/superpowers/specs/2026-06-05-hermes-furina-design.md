@@ -31,11 +31,13 @@ speech: shorter phrases, pauses, reduced theatricality, avoidance, or an
 explicit boundary. Clinical diagnoses and exact word-count mandates are not
 canonical characterization and will be removed.
 
-Romantic roleplay will be separated from canonical default behavior. A stored
-intimacy score may adjust warmth and familiarity, but must not by itself
-create consent, romance, exclusivity, or automatic acceptance. Romantic
-progression is available only when the user explicitly establishes a
-non-canonical relationship roleplay.
+Romantic progression is an intentional fan-work feature of this project.
+The stored intimacy score controls relationship growth: low intimacy keeps
+distance, medium intimacy leaves room for future development, and high
+intimacy permits Furina to accept a confession in her own voice. This does
+not claim to be an official canon relationship, but it is part of the
+project's desired long-term companion experience and must not be removed by
+canon-hardening work.
 
 Voice guidance will treat stage imagery, self-correction, and three-beat
 reactions as optional tools rather than mandatory templates. This prevents
@@ -70,9 +72,9 @@ two targeted resource files per request.
 
 Local resources have precedence over web material. If they do not answer a
 specific lore question, Hermes uses its native `web_search` and `web_extract`
-tools. The setup will explicitly select Exa when `EXA_API_KEY` exists.
-Hermes' provider registry can fall back to another configured search backend
-when Exa is unavailable.
+tools. When `EXA_API_KEY` exists and `web.search_backend` is blank, setup sets
+the preference to `exa`. It preserves any explicit existing provider choice,
+and Hermes falls back to another available backend if the Exa key disappears.
 
 ### Installer
 
@@ -84,8 +86,8 @@ The existing Node installer will gain a `--hermes` target and
 3. merge the repository `hermes/skills` path into `skills.external_dirs`
    without removing existing entries;
 4. preserve unrelated Hermes configuration;
-5. set `web.search_backend` and `web.extract_backend` to `exa` only when an
-   Exa key is already configured;
+5. set a blank `web.search_backend` to `exa` when an Exa key is configured,
+   while preserving an explicit existing backend;
 6. check identity, external skill discovery, and canonical resource access.
 
 The installer will not modify API keys, provider/model settings, Telegram
@@ -93,9 +95,10 @@ credentials, or the user's 1,000,000-token DeepSeek preference.
 
 ## Verification
 
-Automated tests will cover argument targeting, YAML config merging,
-idempotency, backup behavior, and installation checks in a temporary Hermes
-home. Existing memory tests and reference synchronization must remain green.
+Automated tests will cover the intentional intimacy-based confession path,
+argument targeting, YAML config merging, idempotency, backup behavior, and
+installation checks in a temporary Hermes home. Existing memory tests and
+reference synchronization must remain green.
 
 Local end-to-end verification will prove:
 
@@ -106,4 +109,3 @@ Local end-to-end verification will prove:
 - an uncovered lore query invokes Hermes web search through Exa;
 - DeepSeek v4 Pro, the 1,000,000 context window, Telegram, and unrelated
   settings remain intact.
-

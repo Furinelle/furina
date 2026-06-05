@@ -3,6 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs, expandHome, resolveUserPath, ROOT } from "./lib/utils.mjs";
+import {
+  configHasExternalDir,
+  hasEnvKey,
+  mergeHermesConfig
+} from "./lib/hermes-config.mjs";
 
 const LEGACY_COMMANDS = ["furina.md", "furina-save.md", "furina-reflect.md", "furina-compress.md"];
 const CLAUDE_SKILLS = ["furina", "furina-save", "furina-reflect", "furina-compress"];
@@ -11,12 +16,14 @@ function help() {
   return `Furina setup
 
 Usage:
-  node scripts/setup.mjs                 Install Claude Code + Codex Skill + memory runtime
+  node scripts/setup.mjs                 Install Claude Code + Codex + Hermes + memory runtime
   node scripts/setup.mjs --claude        Install Claude Code skills only
   node scripts/setup.mjs --codex         Install Codex Skill only
+  node scripts/setup.mjs --hermes        Install Hermes SOUL.md and external skill config
   node scripts/setup.mjs --check         Check installed files
   node scripts/setup.mjs --check --claude
   node scripts/setup.mjs --check --codex
+  node scripts/setup.mjs --check --hermes
 
 Options:
   --project-claude       Use project .claude/skills instead of installing personal Claude skills
@@ -25,6 +32,7 @@ Options:
   --dry-run              Print actions without writing files
   --claude-home <dir>    Override Claude home, defaults to CLAUDE_HOME or ~/.claude
   --codex-home <dir>     Override Codex home, defaults to CODEX_HOME or ~/.codex
+  --hermes-home <dir>    Override Hermes home, defaults to HERMES_HOME or ~/.hermes
   --memory-path <file>   Override memory JSON path
 `;
 }
@@ -73,8 +81,30 @@ function writeJson(dst, value, label, dryRun) {
   console.log(`installed ${label}: ${dst}`);
 }
 
+function writeText(dst, value, label, dryRun) {
+  if (dryRun) {
+    console.log(`[dry-run] write ${label}: ${dst}`);
+    return;
+  }
+  mkdir(path.dirname(dst), false);
+  fs.writeFileSync(dst, value);
+  console.log(`installed ${label}: ${dst}`);
+}
+
 function existsLabel(filePath) {
   return fs.existsSync(filePath) ? "ok" : "missing";
+}
+
+function timestamp() {
+  return new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+}
+
+function availableBackupPath(filePath) {
+  const base = `${filePath}.bak-${timestamp()}`;
+  if (!fs.existsSync(base)) return base;
+  let suffix = 1;
+  while (fs.existsSync(`${base}-${suffix}`)) suffix += 1;
+  return `${base}-${suffix}`;
 }
 
 function installClaude(paths, dryRun) {
@@ -160,6 +190,50 @@ function installCodex(paths, dryRun) {
   );
 }
 
+function installHermes(paths, dryRun) {
+  const soulSource = path.join(ROOT, "hermes", "SOUL.md");
+  const skillSource = path.join(paths.hermesSkillsDir, "furina-roleplay", "SKILL.md");
+  ensureSource(soulSource);
+  ensureSource(skillSource);
+
+  const soulContent = fs.readFileSync(soulSource, "utf8");
+  const existingSoul = fs.existsSync(paths.hermesSoul)
+    ? fs.readFileSync(paths.hermesSoul, "utf8")
+    : null;
+  if (existingSoul !== soulContent) {
+    if (existingSoul !== null) {
+      const backup = availableBackupPath(paths.hermesSoul);
+      copyFile(paths.hermesSoul, backup, "Hermes SOUL.md backup", dryRun);
+    }
+    copyFile(soulSource, paths.hermesSoul, "Hermes Furina SOUL.md", dryRun);
+  } else {
+    console.log(`kept current Hermes SOUL.md: ${paths.hermesSoul}`);
+  }
+
+  const configContent = fs.existsSync(paths.hermesConfig)
+    ? fs.readFileSync(paths.hermesConfig, "utf8")
+    : "";
+  const envContent = fs.existsSync(paths.hermesEnv)
+    ? fs.readFileSync(paths.hermesEnv, "utf8")
+    : "";
+  const exaReady = hasEnvKey(envContent, "EXA_API_KEY");
+  const mergedConfig = mergeHermesConfig(configContent, paths.hermesSkillsDir, {
+    preferExa: exaReady
+  });
+  if (mergedConfig !== configContent) {
+    writeText(paths.hermesConfig, mergedConfig, "Hermes config", dryRun);
+  } else {
+    console.log(`kept Hermes external skill directory: ${paths.hermesSkillsDir}`);
+  }
+
+  if (fs.existsSync(paths.hermesEnv)) {
+    const exaState = exaReady ? "ready" : "optional";
+    console.log(`${exaState.padEnd(8)} Hermes Exa credential: ${paths.hermesEnv}`);
+  } else {
+    console.log(`optional Hermes Exa credential: ${paths.hermesEnv} not found`);
+  }
+}
+
 function check(paths, targets) {
   const checks = [];
   if (targets.claude) {
@@ -193,6 +267,27 @@ function check(paths, targets) {
     if (state !== "ok") ok = false;
     console.log(`${state.padEnd(7)} ${label}: ${filePath}`);
   }
+
+  if (targets.hermes) {
+    const soulSource = path.join(ROOT, "hermes", "SOUL.md");
+    const soulMatches = fs.existsSync(paths.hermesSoul)
+      && fs.readFileSync(paths.hermesSoul, "utf8") === fs.readFileSync(soulSource, "utf8");
+    const soulState = soulMatches ? "ok" : "missing";
+    if (!soulMatches) ok = false;
+    console.log(`${soulState.padEnd(7)} Hermes SOUL.md: ${paths.hermesSoul}`);
+
+    const configContent = fs.existsSync(paths.hermesConfig)
+      ? fs.readFileSync(paths.hermesConfig, "utf8")
+      : "";
+    const hasSkillDir = configHasExternalDir(configContent, paths.hermesSkillsDir);
+    const skillState = hasSkillDir ? "ok" : "missing";
+    if (!hasSkillDir) ok = false;
+    console.log(`${skillState.padEnd(7)} Hermes external skill directory: ${paths.hermesSkillsDir}`);
+
+    const exaReady = fs.existsSync(paths.hermesEnv)
+      && hasEnvKey(fs.readFileSync(paths.hermesEnv, "utf8"), "EXA_API_KEY");
+    console.log(`${(exaReady ? "ready" : "optional").padEnd(7)} Hermes Exa credential: ${paths.hermesEnv}`);
+  }
   return ok;
 }
 
@@ -205,6 +300,7 @@ if (args.help || args.h) {
 
 const claudeHome = resolveUserPath(args["claude-home"] || process.env.CLAUDE_HOME || path.join(os.homedir(), ".claude"));
 const codexHome = resolveUserPath(args["codex-home"] || process.env.CODEX_HOME || path.join(os.homedir(), ".codex"));
+const hermesHome = resolveUserPath(args["hermes-home"] || process.env.HERMES_HOME || path.join(os.homedir(), ".hermes"));
 const useProjectClaude = Boolean(args["project-claude"]);
 const paths = {
   useProjectClaude,
@@ -214,19 +310,25 @@ const paths = {
   runtimePath: path.join(claudeHome, "furina-memory.mjs"),
   memoryPath: resolveUserPath(args["memory-path"] || path.join(claudeHome, "furina-memory.json")),
   codexSkillDir: path.join(codexHome, "skills", "furina-roleplay"),
-  codexInstallContext: path.join(codexHome, "skills", "furina-roleplay", "references", "install_context.json")
+  codexInstallContext: path.join(codexHome, "skills", "furina-roleplay", "references", "install_context.json"),
+  hermesSoul: path.join(hermesHome, "SOUL.md"),
+  hermesConfig: path.join(hermesHome, "config.yaml"),
+  hermesEnv: path.join(hermesHome, ".env"),
+  hermesSkillsDir: path.join(ROOT, "hermes", "skills")
 };
 
 const dryRun = Boolean(args["dry-run"]);
-const explicitTargets = Boolean(args.claude || args.codex || args.memory || args.runtime);
+const explicitTargets = Boolean(args.claude || args.codex || args.hermes || args.memory || args.runtime);
 const installAll = !explicitTargets;
 const wantsClaude = installAll || Boolean(args.claude);
 const wantsCodex = installAll || Boolean(args.codex);
+const wantsHermes = installAll || Boolean(args.hermes);
 const wantsRuntime = installAll || wantsClaude || Boolean(args.runtime);
 const wantsMemory = installAll || wantsClaude || Boolean(args.memory);
 const targets = {
   claude: wantsClaude,
   codex: wantsCodex,
+  hermes: wantsHermes,
   runtime: wantsRuntime,
   memory: wantsMemory
 };
@@ -240,6 +342,7 @@ try {
   if (wantsRuntime) installRuntime(paths, dryRun);
   if (wantsMemory) installMemory(paths, Boolean(args["reset-memory"]), dryRun);
   if (wantsCodex) installCodex(paths, dryRun);
+  if (wantsHermes) installHermes(paths, dryRun);
 
   console.log("");
   if (dryRun) {
@@ -253,6 +356,7 @@ try {
   console.log("Next:");
   console.log("  Claude Code: /furina 你好，芙宁娜。");
   console.log("  Codex: ask for Furina roleplay or resource maintenance; the skill is installed.");
+  console.log("  Hermes: start a new session; SOUL.md makes Furina the default identity.");
 } catch (error) {
   console.error(`setup failed: ${error.message}`);
   process.exit(1);

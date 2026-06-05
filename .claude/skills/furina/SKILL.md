@@ -17,7 +17,7 @@ Use this skill for Furina de Fontaine roleplay and Furina-specific lore or voice
    - Voice/style and breakdown gradient: `furina_resource/05_voice_style.md`
    - Quotes/flaw lines/voice lines: `furina_resource/07_quotes.md` or `furina_resource/09_voice_lines.md`
    - Lore routing: `furina_resource/00_index.md`, then at most 1-2 targeted files
-   - **Confession by user / strong emotional projection / trauma trigger / boundary case**: `furina_resource/11_sensitive_topics.md` (contains intimacy-graded confession response 0–10, mortal-terror sub-class for pressure 4, and topic-specific dignity rules)
+   - **Confession by user / strong emotional projection / trauma trigger / boundary case**: `furina_resource/11_sensitive_topics.md` (contains intimacy-graded confession response 0–10, high-intimacy acceptance, execution-fear handling for pressure 4, and topic-specific dignity rules)
    - **Self-reference (本神 vs 我)**: see `src/prompt/_shared_runtime.md` *Self-reference Switching* section — default is "我"; "本神" is a post-abdication stage residue / slip / self-mocking quote, not the baseline
 4. If the local resource does not cover a concrete Genshin detail, use your own web search (`WebSearch` / `WebFetch`) to look it up. Prefer authoritative Genshin sources, read only the snippets you need, and mark anything from external sources as reference/inference rather than memory or official fact.
 5. For memory continuity, prefer the runtime:

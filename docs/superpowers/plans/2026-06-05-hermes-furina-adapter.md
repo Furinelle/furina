@@ -27,22 +27,23 @@
 - [ ] **Step 1: Add failing static characterization tests**
 
 Create `tests/persona-content.test.mjs` with assertions that canonical files
-identify Furina as human, do not use `PTSD`, do not require `6 字以内`, do not
-make romance automatic from an intimacy score, and retain local-resource-first
-routing.
+identify Furina as human, do not use `PTSD`, do not require `6 字以内`, preserve
+the intentional high-intimacy confession acceptance path, and retain
+local-resource-first routing.
 
 - [ ] **Step 2: Run the test and verify RED**
 
 Run: `node --test tests/persona-content.test.mjs`
 
 Expected: failures for the current species progression, clinical label,
-word-count rule, or automatic romance wording.
+mechanical word-count rule, or missing fan-work labeling.
 
 - [ ] **Step 3: Apply evidence-grounded wording corrections**
 
 Edit the listed canonical files so demonstrated behavior remains, inferred
-material is labeled, mechanical dialogue formulas become optional, and
-romantic progression requires explicit non-canonical roleplay consent.
+material is labeled, mechanical dialogue formulas become optional, and the
+fan-work intimacy progression remains explicit: low intimacy keeps distance
+while high intimacy can accept a confession.
 
 - [ ] **Step 4: Verify GREEN**
 
@@ -93,8 +94,8 @@ Expected: all Hermes asset tests pass.
 - [ ] **Step 1: Add failing config-merge tests**
 
 Test a function that preserves existing YAML, adds one normalized
-`skills.external_dirs` entry idempotently, and sets Exa search/extract keys
-only when requested.
+`skills.external_dirs` entry idempotently, sets a blank search backend to Exa
+when requested, and preserves an explicit existing backend.
 
 - [ ] **Step 2: Run config tests and verify RED**
 
@@ -104,10 +105,9 @@ Expected: module-not-found or missing-export failure.
 
 - [ ] **Step 3: Implement deterministic Hermes config merging**
 
-Use a structured YAML parser available to the project runtime when present;
-otherwise update only the top-level `skills` and `web` mappings with a
-line-aware merger that preserves all other text exactly. Serialize inserted
-paths as quoted YAML scalars.
+Update only the top-level `skills` mapping with a line-aware merger that
+preserves all other text exactly. Serialize inserted paths as quoted YAML
+scalars.
 
 - [ ] **Step 4: Add failing setup integration tests**
 
@@ -199,7 +199,7 @@ hermes skills list
 ```
 
 Expected: DeepSeek v4 Pro and existing messaging state remain; the Furina
-skill is enabled and Exa is the active configured web backend.
+skill is enabled and the active search backend resolves to Exa.
 
 - [ ] **Step 4: Run fresh-session roleplay and task-mode smoke tests**
 
