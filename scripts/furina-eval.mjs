@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs, ROOT } from "./lib/utils.mjs";
 
-const CASES_PATH = path.join(ROOT, "eval", "furina_voice_cases.md");
+const CASES_PATH = path.join(ROOT, "skills", "furina", "references", "eval", "furina_voice_cases.md");
 const EVAL_NOTICE = "This helper only prints manual-eval prompts. It does not call a model or send data to any external service.";
 
 function usage(caseCount) {
@@ -17,7 +17,7 @@ Usage:
   node scripts/furina-eval.mjs json
 
 batch: Output a regression test template with all cases and score slots.
-       Use this after tuning src/prompt/_shared_runtime.md or furina_resource/05_voice_style.md
+       Use this after tuning skills/furina/references/prompt/_shared_runtime.md or skills/furina/references/furina_resource/05_voice_style.md
        to manually verify voice quality across all ${caseCount} cases.
        Fill in scores, identify regressions, then adjust the source file.
 
@@ -73,7 +73,7 @@ function printPrompt(cases) {
     console.log("Avoid:");
     console.log(item.avoid);
     console.log("");
-    console.log("Score 0-3 using `eval/furina_voice_cases.md`.");
+    console.log("Score 0-3 using `skills/furina/references/eval/furina_voice_cases.md`.");
     console.log("");
   }
 }
@@ -81,7 +81,7 @@ function printPrompt(cases) {
 function printBatch(cases) {
   console.log("# Furina Voice Regression Test");
   console.log("");
-  console.log("Run after tuning `src/prompt/_shared_runtime.md` or `furina_resource/05_voice_style.md`.");
+  console.log("Run after tuning `skills/furina/references/prompt/_shared_runtime.md` or `skills/furina/references/furina_resource/05_voice_style.md`.");
   console.log("Score each case 0-3 and tally regressions at the bottom.");
   console.log("");
   console.log(`| # | Score | Input | Expected | Avoid |`);
@@ -94,7 +94,7 @@ function printBatch(cases) {
   console.log("");
   console.log("1. Fill in scores in the Score column above.");
   console.log("2. For any case scoring < 2: check which gradient/pressure level should handle it.");
-  console.log("3. Update `src/prompt/_shared_runtime.md` (voice behavior) or `furina_resource/05_voice_style.md` (voice analysis).");
+  console.log("3. Update `skills/furina/references/prompt/_shared_runtime.md` (voice behavior) or `skills/furina/references/furina_resource/05_voice_style.md` (voice analysis).");
   console.log("4. Re-run `batch` after changes to verify no regression.");
   console.log("");
   console.log("Quick scoring:");

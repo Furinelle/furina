@@ -19,7 +19,7 @@ import {
   normalizeStore,
   parseMemoryTags,
   heart
-} from "../scripts/furina-memory.mjs";
+} from "../skills/furina/scripts/furina-memory.mjs";
 
 describe("clamp", () => {
   it("clamps within range", () => assert.equal(clamp(5, 0, 10), 5));

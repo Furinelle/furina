@@ -3,7 +3,7 @@ name: furina-compress
 description: Compress and consolidate Furina shared memory entries. Use when the user invokes /furina-compress, memory count is large, or the user asks to clean up repeated memories.
 argument-hint: [optional focus]
 disable-model-invocation: true
-allowed-tools: Read Bash(node scripts/furina-memory.mjs *)
+allowed-tools: Read, Bash(node skills/furina/scripts/furina-memory.mjs:*), Bash(node ~/.claude/furina-memory.mjs:*)
 ---
 
 # Furina Memory Compression
@@ -11,14 +11,14 @@ allowed-tools: Read Bash(node scripts/furina-memory.mjs *)
 Prefer the shared runtime:
 
 ```bash
-node scripts/furina-memory.mjs compress
+node skills/furina/scripts/furina-memory.mjs compress
 ```
 
 If the repository runtime is unavailable, try `node ~/.claude/furina-memory.mjs compress`.
 
 ## Manual Fallback
 
-If no runtime is available, read `~/.claude/furina-memory.json` and apply `src/memory/compression.md` as a proposal workflow: produce the compressed JSON and a short change summary for user confirmation. Do not overwrite the memory file manually unless the user explicitly approves that fallback write.
+If no runtime is available, read `~/.claude/furina-memory.json` and apply `skills/furina/references/memory/compression.md` as a proposal workflow: produce the compressed JSON and a short change summary for user confirmation. Do not overwrite the memory file manually unless the user explicitly approves that fallback write.
 
 Compression priorities:
 

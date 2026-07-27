@@ -10,7 +10,7 @@ allowed-tools: Read
 
 Read `$ARGUMENTS` as the transcript or notes to analyze. Output valid JSON only. Do not include Markdown fences or explanatory text.
 
-Use the schema from `src/prompt/reflection.md` and `src/memory/memory_format.md` when needed.
+Use the schema from `skills/furina/references/prompt/reflection.md` and `skills/furina/references/memory/memory_format.md` when needed.
 
 ## Extraction Rules
 
@@ -25,5 +25,5 @@ Use the schema from `src/prompt/reflection.md` and `src/memory/memory_format.md`
 After generating JSON, the user can merge it with:
 
 ```bash
-node scripts/furina-memory.mjs remember --reflection <reflection.json>
+node skills/furina/scripts/furina-memory.mjs remember --reflection <reflection.json>
 ```

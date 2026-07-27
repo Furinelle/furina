@@ -2,28 +2,32 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { parseArgs, resolveUserPath, ROOT } from "./lib/utils.mjs";
 
-const CLAUDE_SKILLS = ["furina", "furina-save", "furina-reflect", "furina-compress"];
+const SKILL_SRC = path.join(ROOT, "skills", "furina");
+const SKILL_NAME = "furina";
 
 function help() {
-  return `Furina setup
+  return `Furina setup — install the universal skill into any agent's skills directory
+
+Recommended: npx skills add Furinelle/furina   (auto-detects compatible agents)
 
 Usage:
-  node scripts/setup.mjs                 Install Claude Code + Codex Skill + memory runtime
-  node scripts/setup.mjs --claude        Install Claude Code skills only
-  node scripts/setup.mjs --codex         Install Codex Skill only
-  node scripts/setup.mjs --check         Check installed files
-  node scripts/setup.mjs --check --claude
-  node scripts/setup.mjs --check --codex
+  node scripts/setup.mjs                 Install to Claude Code + .agents (cross-agent convention) + memory runtime
+  node scripts/setup.mjs --claude        ~/.claude/skills/furina (Claude Code)
+  node scripts/setup.mjs --agents        ~/.agents/skills/furina (Codex / Cursor / Goose / Amp / Cline ...)
+  node scripts/setup.mjs --gemini        ~/.gemini/skills/furina (Gemini CLI)
+  node scripts/setup.mjs --opencode      ~/.config/opencode/skills/furina (OpenCode)
+  node scripts/setup.mjs --dir <path>    <path>/furina (any other agent)
+  node scripts/setup.mjs --check [target flags]
 
 Options:
-  --project-claude       Use project .claude/skills instead of installing personal Claude skills
   --reset-memory         Replace the existing memory JSON with the empty template
   --dry-run              Print actions without writing files
-  --claude-home <dir>    Override Claude home, defaults to CLAUDE_HOME or ~/.claude
-  --codex-home <dir>     Override Codex home, defaults to CODEX_HOME or ~/.codex
+  --claude-home <dir>    Override Claude home (default CLAUDE_HOME or ~/.claude)
   --memory-path <file>   Override memory JSON path
+  --codex                Deprecated alias of --agents (Codex reads ~/.agents/skills)
 `;
 }
 
@@ -61,51 +65,36 @@ function copyDir(src, dst, label, dryRun) {
   console.log(`installed ${label}: ${dst}`);
 }
 
-function writeJson(dst, value, label, dryRun) {
-  if (dryRun) {
-    console.log(`[dry-run] write ${label}: ${dst}`);
-    return;
-  }
-  mkdir(path.dirname(dst), false);
-  fs.writeFileSync(dst, `${JSON.stringify(value, null, 2)}\n`);
-  console.log(`installed ${label}: ${dst}`);
-}
-
 function existsLabel(filePath) {
   return fs.existsSync(filePath) ? "ok" : "missing";
 }
 
-function installClaude(paths, dryRun) {
-  if (!paths.useProjectClaude) {
-    mkdir(paths.claudeSkillsDir, dryRun);
-    for (const name of CLAUDE_SKILLS) {
-      copyDir(
-        path.join(ROOT, ".claude", "skills", name),
-        path.join(paths.claudeSkillsDir, name),
-        `Claude skill ${name}`,
-        dryRun
-      );
-    }
-    return;
-  }
-
-  for (const name of CLAUDE_SKILLS) {
-    ensureSource(path.join(ROOT, ".claude", "skills", name, "SKILL.md"));
-  }
-  console.log("kept project Claude skills: .claude/skills");
+function installSkill(targetDir, label, dryRun) {
+  copyDir(SKILL_SRC, path.join(targetDir, SKILL_NAME), `skill (${label})`, dryRun);
 }
 
 function installRuntime(paths, dryRun) {
+  const src = path.join(SKILL_SRC, "scripts", "furina-memory.mjs");
+  ensureSource(src);
   copyFile(
-    path.join(ROOT, "scripts", "furina-memory.mjs"),
-    paths.runtimePath,
-    "shared memory runtime",
+    path.join(SKILL_SRC, "scripts", "lib", "utils.mjs"),
+    paths.runtimeLibPath,
+    "memory runtime lib",
     dryRun
   );
+  if (dryRun) {
+    console.log(`[dry-run] copy shared memory runtime: ${src} -> ${paths.runtimePath}`);
+    return;
+  }
+  // 安装副本不再与 skill 同目录，重写相对导入指向随装的 furina-lib，避免 ERR_MODULE_NOT_FOUND
+  const content = fs.readFileSync(src, "utf8").replace('"./lib/utils.mjs"', '"./furina-lib/utils.mjs"');
+  mkdir(path.dirname(paths.runtimePath), false);
+  fs.writeFileSync(paths.runtimePath, content);
+  console.log(`installed shared memory runtime: ${paths.runtimePath}`);
 }
 
 function installMemory(paths, resetMemory, dryRun) {
-  const source = path.join(ROOT, "claudecode", "memory", "furina-memory.json");
+  const source = path.join(SKILL_SRC, "assets", "memory-template.json");
   ensureSource(source);
   if (fs.existsSync(paths.memoryPath) && !resetMemory) {
     console.log(`kept existing memory: ${paths.memoryPath}`);
@@ -114,59 +103,32 @@ function installMemory(paths, resetMemory, dryRun) {
   copyFile(source, paths.memoryPath, resetMemory ? "reset memory JSON" : "memory JSON", dryRun);
 }
 
-function installCodex(paths, dryRun) {
-  copyDir(
-    path.join(ROOT, "codex", "skills", "furina-roleplay"),
-    paths.codexSkillDir,
-    "Codex skill furina-roleplay",
-    dryRun
-  );
-  writeJson(
-    paths.codexInstallContext,
-    {
-      repo_root: ROOT,
-      furina_resource: path.join(ROOT, "furina_resource"),
-      furina_resource_index: path.join(ROOT, "furina_resource", "00_index.md"),
-      voice_style: path.join(ROOT, "furina_resource", "05_voice_style.md"),
-      sensitive_topics: path.join(ROOT, "furina_resource", "11_sensitive_topics.md"),
-      shared_runtime: path.join(ROOT, "src", "prompt", "_shared_runtime.md"),
-      voice_eval_cases: path.join(ROOT, "eval", "furina_voice_cases.md"),
-      memory_runtime: path.join(ROOT, "scripts", "furina-memory.mjs"),
-      sync_references_runtime: path.join(ROOT, "scripts", "sync-references.mjs"),
-      generated_by: "scripts/setup.mjs"
-    },
-    "Codex install context",
-    dryRun
-  );
-}
-
 function check(paths, targets) {
   const checks = [];
-  if (targets.claude) {
-    for (const name of CLAUDE_SKILLS) {
-      const skillPath = paths.useProjectClaude
-        ? path.join(ROOT, ".claude", "skills", name, "SKILL.md")
-        : path.join(paths.claudeSkillsDir, name, "SKILL.md");
-      checks.push([`Claude skill ${name}`, skillPath]);
-    }
+  for (const [flag, dir, label] of paths.skillTargets) {
+    if (!targets[flag]) continue;
+    checks.push([`skill (${label})`, path.join(dir, SKILL_NAME, "SKILL.md")]);
   }
-  if (targets.runtime) {
-    checks.push(["memory runtime", paths.runtimePath]);
-  }
-  if (targets.memory) {
-    checks.push(["memory JSON", paths.memoryPath]);
-  }
-  if (targets.codex) {
-    checks.push(["Codex skill", paths.codexSkillDir]);
-    checks.push(["Codex SKILL.md", path.join(paths.codexSkillDir, "SKILL.md")]);
-    checks.push(["Codex install context", paths.codexInstallContext]);
-  }
+  if (targets.runtime) checks.push(["memory runtime", paths.runtimePath]);
+  if (targets.memory) checks.push(["memory JSON", paths.memoryPath]);
 
   let ok = true;
   for (const [label, filePath] of checks) {
     const state = existsLabel(filePath);
     if (state !== "ok") ok = false;
     console.log(`${state.padEnd(7)} ${label}: ${filePath}`);
+  }
+
+  // 仅验存在性会漏掉依赖缺失（如 lib 未随装），对运行时做一次真实冒烟
+  if (targets.runtime && fs.existsSync(paths.runtimePath)) {
+    try {
+      execFileSync(process.execPath, [paths.runtimePath, "status"], { stdio: "pipe" });
+      console.log(`ok      memory runtime smoke test: node ${paths.runtimePath} status`);
+    } catch (error) {
+      ok = false;
+      const firstLine = String(error.stderr || error.message).split("\n")[0];
+      console.log(`failed  memory runtime smoke test: node ${paths.runtimePath} status (${firstLine})`);
+    }
   }
   return ok;
 }
@@ -179,29 +141,38 @@ if (args.help || args.h) {
 }
 
 const claudeHome = resolveUserPath(args["claude-home"] || process.env.CLAUDE_HOME || path.join(os.homedir(), ".claude"));
-const codexHome = resolveUserPath(args["codex-home"] || process.env.CODEX_HOME || path.join(os.homedir(), ".codex"));
-const useProjectClaude = Boolean(args["project-claude"]);
+const agentsHome = resolveUserPath(process.env.AGENTS_HOME || path.join(os.homedir(), ".agents"));
+const customDir = args.dir ? resolveUserPath(args.dir) : null;
+
 const paths = {
-  useProjectClaude,
-  claudeSkillsDir: useProjectClaude ? path.join(ROOT, ".claude", "skills") : path.join(claudeHome, "skills"),
+  // [flag, skillsDir, label]
+  skillTargets: [
+    ["claude", path.join(claudeHome, "skills"), "Claude Code"],
+    ["agents", path.join(agentsHome, "skills"), ".agents cross-agent"],
+    ["gemini", path.join(os.homedir(), ".gemini", "skills"), "Gemini CLI"],
+    ["opencode", path.join(os.homedir(), ".config", "opencode", "skills"), "OpenCode"],
+    ...(customDir ? [["dir", customDir, "custom dir"]] : [])
+  ],
   runtimePath: path.join(claudeHome, "furina-memory.mjs"),
-  memoryPath: resolveUserPath(args["memory-path"] || path.join(claudeHome, "furina-memory.json")),
-  codexSkillDir: path.join(codexHome, "skills", "furina-roleplay"),
-  codexInstallContext: path.join(codexHome, "skills", "furina-roleplay", "references", "install_context.json")
+  runtimeLibPath: path.join(claudeHome, "furina-lib", "utils.mjs"),
+  memoryPath: resolveUserPath(args["memory-path"] || path.join(claudeHome, "furina-memory.json"))
 };
 
 const dryRun = Boolean(args["dry-run"]);
-const explicitTargets = Boolean(args.claude || args.codex || args.memory || args.runtime);
+if (args.codex) {
+  console.log("note: --codex is deprecated; Codex reads ~/.agents/skills — installing there (--agents).");
+}
+const wantsAgentsFlag = Boolean(args.agents || args.codex);
+const explicitTargets = Boolean(args.claude || wantsAgentsFlag || args.gemini || args.opencode || customDir || args.memory || args.runtime);
 const installAll = !explicitTargets;
-const wantsClaude = installAll || Boolean(args.claude);
-const wantsCodex = installAll || Boolean(args.codex);
-const wantsRuntime = installAll || wantsClaude || Boolean(args.runtime);
-const wantsMemory = installAll || wantsClaude || Boolean(args.memory);
 const targets = {
-  claude: wantsClaude,
-  codex: wantsCodex,
-  runtime: wantsRuntime,
-  memory: wantsMemory
+  claude: installAll || Boolean(args.claude),
+  agents: installAll || wantsAgentsFlag,
+  gemini: Boolean(args.gemini),
+  opencode: Boolean(args.opencode),
+  dir: Boolean(customDir),
+  runtime: installAll || Boolean(args.claude) || Boolean(args.runtime),
+  memory: installAll || Boolean(args.claude) || Boolean(args.memory)
 };
 
 try {
@@ -209,10 +180,11 @@ try {
     process.exit(check(paths, targets) ? 0 : 1);
   }
 
-  if (wantsClaude) installClaude(paths, dryRun);
-  if (wantsRuntime) installRuntime(paths, dryRun);
-  if (wantsMemory) installMemory(paths, Boolean(args["reset-memory"]), dryRun);
-  if (wantsCodex) installCodex(paths, dryRun);
+  for (const [flag, dir, label] of paths.skillTargets) {
+    if (targets[flag]) installSkill(dir, label, dryRun);
+  }
+  if (targets.runtime) installRuntime(paths, dryRun);
+  if (targets.memory) installMemory(paths, Boolean(args["reset-memory"]), dryRun);
 
   console.log("");
   if (dryRun) {
@@ -225,7 +197,7 @@ try {
   console.log("");
   console.log("Next:");
   console.log("  Claude Code: /furina 你好，芙宁娜。");
-  console.log("  Codex: ask for Furina roleplay or resource maintenance; the skill is installed.");
+  console.log("  Other agents: mention Furina roleplay, or invoke the skill by name (e.g. $furina in Codex).");
 } catch (error) {
   console.error(`setup failed: ${error.message}`);
   process.exit(1);

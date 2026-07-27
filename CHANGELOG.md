@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **重构为 agent 通用 skill（Agent Skills 开放标准）**：唯一规范 skill 迁至 `skills/furina/`（自包含：SKILL.md + references/ + scripts/ + assets/ + config/），可被 `npx skills add` 及支持 agentskills.io 标准的客户端（Claude Code、Codex、Gemini CLI、Cursor、OpenCode 等）直接安装
+- `src/`、`furina_resource/`、`eval/`、记忆运行时并入 `skills/furina/`，彻底移除 src ↔ references 双份同步（删除 `scripts/sync-references.mjs`）
+- 删除平台专用目录 `codex/`（Codex 现行用户级路径为 `~/.agents/skills`，由通用 skill 覆盖）与 `claudecode/`（记忆模板迁至 `skills/furina/assets/`）
+- `.claude/skills/furina` 降为薄入口（斜杠命令糖），规范内容不再驻留平台目录
+- `scripts/setup.mjs` 重写为多 agent 安装器：`--claude` / `--agents`（Codex/Cursor/Goose/Amp 等通用约定）/ `--gemini` / `--opencode` / `--dir <path>`；`--codex` 为 `--agents` 的弃用别名
+- 新增根 `AGENTS.md`（agent 通用项目说明与维护原则）；README / SETUP_GUIDE 重写为跨平台定位；manifest.json 路径与 capabilities 对齐新布局，内嵌 changelog 移除（以 CHANGELOG.md 为唯一事实源）
+
+### Fixed
+- `scripts/setup.mjs`：全局记忆运行时随装 `furina-lib/utils.mjs` 并重写导入，修复安装副本 `ERR_MODULE_NOT_FOUND` 崩溃；`--check` 新增 `status` 冒烟测试，不再只验文件存在性
+- 全局安装的 Claude skills 注入「安装副本说明」（仓库根路径锚点）并生成 `install_context.json`，修复异 cwd 下仓库相对路径全部失效的问题
+- Claude skills `allowed-tools` 改为逗号分隔与 `:*` 前缀语法（原写法疑似不生效）；`/furina` description 补中文触发词
+- 清理 README、SETUP_GUIDE、脚本说明与记忆模板中的旧目录、旧测试数和平台专属表述，补充从 1.17 旧布局迁移到通用 skill 的说明
+
+### Added
+- **furina_resource 全量核对更新（对照 bwiki 原神WIKI / 萌娘百科 / 观测枢，5 智能体分工逐字核验）**：01 移除无据称呼与头衔、补特殊料理「普茹斯蒂司」；02 新增角色故事 1-4 的完美主义/小动物/五百年自述小节与幽光星星意象；03 修正厄歌莉娅传承与歌剧院表述、海露港初见核实为正确并扩写、芙宁娜奖归位 4.3；04 元素爆发官方名「万众狂欢」勘误、4 命台词补全、命座出处逐条核对；06 八位角色新增「对方视角」语音摘要；07 台词逐字勘误去重、落泪借口替换为逐字原句（"我身上的水元素过于充盈"）、新增「易误用台词警示（芙卡洛斯≠芙宁娜）」；09 语音条目归位并大幅扩充（好感/突破/问候/宝箱等全逐字）、生日语音标注来源类型；08 新增神力/通心粉/称呼三条 FAQ；10 萌点/名字考据/宣发互文/梗清单按萌百最新版更新；00 路由补齐 06/07/11/08；05 表白节收敛为指向 11 的唯一入口指针
+- 人设增补（经联网逐字核验官方语料）：「我身上的水元素过于充盈」落泪借口（`_shared_runtime.md` 梯度原则 + `07_quotes.md`）；「共演」关系官方锚句（`11_sensitive_topics.md` 高亲密度第三拍 + `06_relationships.md` 旅行者）；语气词与节奏小节（句尾哦/嘛/啦、"咳咳"找补、先宣言后找补，`_shared_runtime.md`）；版本足迹 2023-2026 速查与资料时效声明（`03_story_timeline.md`）
+- 收尾核验四项存疑资料：补 2024/2025 两封角色生日邮件的年份、标题与内容锚点；确认三句尘歌壶同伴语音；确认“映影取景”属于天气语音「下雪的时候」；确认“通心粉打折的大日子”出自 4.3 活动「蔷薇与铳枪」而非传说任务；删除最后一条无可靠出处的剧情引语
+- eval 新增用例 28「骗子指控」（11 号安全表方向性场景）与 8 轮多轮漂移验收脚本（量化指标：「本神」频次、篇幅膨胀、意象重复）
+
+### Verified
+- `node --test` 共 67 项通过；默认 Claude Code + `.agents`、Gemini CLI、OpenCode、自定义目录及 `--codex` 兼容别名均完成临时目录安装/检查
+- `skills/furina/` 通过官方 `skills-ref validate`；语气验收表可解析出 28 个用例
+
 ## [1.17.0] - 2026-06-05
 
 ### Changed

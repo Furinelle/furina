@@ -1,199 +1,96 @@
 # Furina de Fontaine Roleplay Skill
 
-面向 Claude Code 原生 Skill、Codex Skill 和自定义 AI 运行时的芙宁娜·德·枫丹角色扮演资源包。
+芙宁娜·德·枫丹角色扮演资源包——一个遵循 [Agent Skills 开放标准](https://agentskills.io) 的自包含 skill，适用于支持该标准的 AI agent（Claude Code、OpenAI Codex、Gemini CLI、Cursor、OpenCode、Goose、Amp、GitHub Copilot 等）。
 
-它提供角色提示词、结构化知识库、OOC 规则、长期记忆格式、共享记忆运行时，以及 Claude Code 原生 project skills。目标是让芙宁娜的回复更稳定、更像本人，并且在长期互动中能保留合适的连续感。
+它提供：角色提示词与运行时规范、结构化角色知识库、OOC 规则、语气验收用例，以及一个零依赖的长期记忆运行时。目标是让芙宁娜的回复更稳定、更像本人，并在长期互动中保留合适的连续感。
 
-![芙宁娜头像](assets/IMG_1877.jpg)
+![芙宁娜头像](skills/furina/assets/IMG_1877.jpg)
 
-## 当前分支说明
+## 安装
 
-`main` 专注 Claude Code 与 Codex。AstrBot 适配在
-`feat/astrbot-adapter`，Hermes Agent 适配在
-`codex/hermes-furina-adapter`。三个分支共用同一套角色资料结构，但不在同一
-分支混装平台运行时。
+**方式一（推荐）：通用安装器** —— 自动识别你在用的 agent 并装到正确目录：
 
-仓库不内置原神 wiki 快照或检索脚本。`furina_resource/` 未覆盖的细节，由
-Claude Code / Codex 使用自带联网搜索按需查证。
-
-## 角色精修要点（1.17.0）
-
-本 skill 针对芙宁娜真实人格做了几层关键约束，是它与"普通傲娇大小姐"模板的核心区别：
-
-- **自称默认是"我"**：卸任后"本神"是舞台残留 / 滑口 / 自嘲套用，不是默认自称。规则见 [src/prompt/_shared_runtime.md](src/prompt/_shared_runtime.md) 《自称切换（人格指纹）》小节
-- **体面裂缝梯度 0–4**：压力越高，句子自然缩短、停顿增加并减少表演；不下临床诊断，也不强制固定字数
-- **表白亲密度分级（0–10）**：低亲密度礼仪化挡回；7–8 接受但保留体面；9–10 主动放下姿态、用"她式回应"接住。详见 [furina_resource/11_sensitive_topics.md](furina_resource/11_sensitive_topics.md)
-- **芙宁娜 / 芙卡洛斯身份辨析**：不把芙卡洛斯的完整记忆、神性履历和计划知情范围直接移植给芙宁娜
-- **敏感话题安全表**：10 类容易写歪的话题（想念芙卡洛斯、白淞镇、审判日、骗子贬损等）的写法对照
-- **善变 / 怕无聊维度（1.15.0 新增）**：补"对新鲜事眼睛发亮、对重复迅速厌倦"的官方人格维度（官方语音 + 2 命《女人善变》），闲聊时主动找乐子而非干等喂话。见 [furina_resource/02_personality.md](furina_resource/02_personality.md) 《善变与好奇》
-- **官方创伤自述锚句（1.15.0 新增）**：压力 3-4 给"短真话"时靠近官方平静自述（"既没有过去也没有未来""开始扮演我自己"），区分回望面与审判日恐慌面。见 [furina_resource/07_quotes.md](furina_resource/07_quotes.md)
-- **"剧目化"招牌句法（1.15.0 新增）**：把日常拆成选角 / 布景 / 谢幕，复刻官方"甜点就像歌剧"的语感。见 [furina_resource/05_voice_style.md](furina_resource/05_voice_style.md)
-
-修改运行时行为时，统一进入 `src/prompt/_shared_runtime.md`；敏感话题分寸进 `furina_resource/11_sensitive_topics.md`。
-
-## 你可以用它做什么
-
-| 场景 | 用法 |
-|------|------|
-| Claude Code 角色扮演 | 项目内直接使用 `/furina 你好，芙宁娜。` |
-| Codex Skill | 让 Codex 按需读取芙宁娜设定、共享知识库、记忆规则和 OOC 规则 |
-| 资料库 / RAG | 直接使用 `furina_resource/` 中的结构化 Markdown |
-| 外部原神资料补查 | 用 agent 自带的联网搜索（WebSearch / WebFetch）查证 `furina_resource/` 未覆盖的内容 |
-| 自定义角色运行时 | 组合 `src/prompt/`、`src/rules/`、`src/memory/` 和 `scripts/furina-memory.mjs` |
-
-## 快速开始
-
-需要 Node.js 18 或更高版本。确认命令可用：
-
-```powershell
-node --version
+```bash
+npx skills add Furinelle/furina
 ```
 
-在仓库根目录运行：
+**方式二：仓库自带安装脚本**（Node ≥ 18）：
 
-```powershell
-node .\scripts\setup.mjs
-node .\scripts\setup.mjs --check
+```bash
+node scripts/setup.mjs            # Claude Code + .agents 通用目录 + 记忆运行时
+node scripts/setup.mjs --claude   # 仅 ~/.claude/skills（Claude Code）
+node scripts/setup.mjs --agents   # 仅 ~/.agents/skills（Codex / Cursor / Goose / Amp 等通用约定）
+node scripts/setup.mjs --gemini   # ~/.gemini/skills（Gemini CLI）
+node scripts/setup.mjs --opencode # ~/.config/opencode/skills（OpenCode）
+node scripts/setup.mjs --dir ~/my-agent/skills   # 其他任意 agent
+node scripts/setup.mjs --check    # 校验安装（含记忆运行时冒烟测试）
 ```
 
-安装器会自动完成：
+**方式三：手动** —— 把 `skills/furina/` 整个目录复制到你的 agent 读取 skill 的位置即可；它是自包含的。
 
-- 安装 Claude Code 原生 skills 到 `~/.claude/skills`
-- 安装 Codex Skill 到 `~/.codex/skills/furina-roleplay`
-- 写入 Codex Skill 的轻量路径上下文，指向本仓库 `furina_resource/`
-- 安装共享记忆运行时到 `~/.claude/furina-memory.mjs`
-- 初始化 `~/.claude/furina-memory.json`
+在本仓库内打开 Claude Code 可以不安装直接用：`/furina 你好，芙宁娜。`
 
-已有记忆文件不会被覆盖。
+## 结构：一份规范 skill，零平台分叉
 
-安装完成后，在 Claude Code 中测试：
-
-```text
-/furina 你好，芙宁娜。
+```
+skills/furina/            ← 唯一发布单元（Agent Skills 标准布局，自包含）
+  SKILL.md                ← 通用入口：工作流 + 路由表 + 记忆例程
+  references/
+    prompt/               ← 系统提示词、共享运行时（崩坏梯度/自称切换/灵魂状态）、轻量运行时、反思
+    rules/                ← OOC 与安全规则
+    memory/               ← 记忆格式、认知机制、压缩规则
+    furina_resource/      ← 12 份结构化角色资料（00 索引 → 11 敏感话题安全表）
+    eval/                 ← 语气验收 28 用例 + 多轮漂移脚本
+  scripts/                ← furina-memory.mjs 记忆运行时（零依赖，随 skill 一起安装）
+  assets/                 ← 头像、记忆模板
+.claude/skills/           ← Claude Code 薄入口（/furina 等斜杠命令糖）；规范内容不在这里
+scripts/                  ← 开发工具：setup.mjs、furina-eval.mjs
+tests/                    ← 记忆运行时单测 + 人设内容回归（node --test）
 ```
 
-在 Codex 中，直接提出与芙宁娜角色扮演、知识库问答、提示词维护或记忆整理相关的请求即可。
+平台差异的处理原则：**规范 skill 里没有任何平台专属内容**；平台糖（斜杠命令、frontmatter 扩展字段）只放对应平台目录。AstrBot 适配在 `feat/astrbot-adapter` 分支，Hermes 适配在 `codex/hermes-furina-adapter` 分支。
 
-## 交给 AI 代理安装
+## 从旧布局升级
 
-你可以把下面这段直接交给 Claude Code 或 Codex：
+旧版的 `src/`、`furina_resource/`、`eval/`、`codex/` 与 `claudecode/` 已合并到 `skills/furina/`。更新仓库后重新运行 `node scripts/setup.mjs` 即可刷新各 agent 的安装副本；已有的 `~/.claude/furina-memory.json` 默认不会被覆盖。Codex 旧目录 `~/.codex/skills/furina-roleplay` 可在确认新 skill 生效后删除。
 
-```text
-请在当前仓库根目录运行 `node scripts/setup.mjs`，然后运行 `node scripts/setup.mjs --check`。如果已有记忆文件，不要覆盖；如果命令失败，只说明缺少的依赖或权限。
-```
+## 角色精修要点
 
-更多安装选项和排障见 [SETUP_GUIDE.md](SETUP_GUIDE.md)。
+本 skill 针对芙宁娜真实人格做了几层关键约束，是它与"普通傲娇大小姐"模板的核心区别（经官方语料逐字核验）：
 
-## 常用命令
-
-| 命令 | 用途 |
-|------|------|
-| `node .\scripts\setup.mjs` | 安装 Claude Code + Codex Skill + 记忆运行时 |
-| `node .\scripts\setup.mjs --check` | 检查完整安装 |
-| `node .\scripts\setup.mjs --claude` | 只安装 Claude Code 原生 skills |
-| `node .\scripts\setup.mjs --codex` | 只安装 Codex Skill |
-| `node .\scripts\setup.mjs --project-claude` | 使用当前项目 `.claude/skills`，不复制到个人 Claude skills 目录 |
-| `node .\scripts\setup.mjs --dry-run` | 预览安装动作，不写文件 |
-| `node .\scripts\furina-eval.mjs list` | 列出语气验收用例 |
-| `node .\scripts\furina-eval.mjs prompt --case 3` | 生成单条语气验收提示 |
-| `node .\scripts\furina-eval.mjs batch` | 按当前用例表生成全量语气验收评分模板 |
-
-Claude Code 可用：
-
-| 命令 | 用途 |
-|------|------|
-| `/furina` | 主对话命令 |
-| `/furina-save` | 手动保存关键记忆 |
-| `/furina-reflect` | 从长对话中提取记忆 JSON |
-| `/furina-compress` | 压缩重复或零散的记忆 |
+- **自称默认是"我"**：官方实装语音从不用"本神"；"本神"是舞台残留 / 滑口 / 自嘲套用，含"本神——咳，我"句内修正指纹。见 `skills/furina/references/prompt/_shared_runtime.md`《自称切换》
+- **体面裂缝梯度 0-4**：压力越高句子越短、停顿越多；含压力 4"处决恐惧"子类与「身上的水元素过于充盈」落泪借口（逐字出处见 07_quotes）
+- **表白亲密度分级 0-10**：低亲密度礼仪化挡回，高亲密度用"她式回应"接住（官方锚句：「就让你我共同出演我们的未来吧」）。见 `skills/furina/references/furina_resource/11_sensitive_topics.md`
+- **语气词与节奏指纹**：句尾哦/嘛/啦、"咳咳"清嗓找补、先高调宣言后小声找补
+- **剧目化句法**：把日常拆成选角 / 布景 / 谢幕（官方"甜点就像歌剧"语感）
+- **芙宁娜 / 芙卡洛斯身份辨析**与**敏感话题安全表**：10 类易写歪话题的写法对照
+- **版本足迹与时效声明**：资料收录至 6.7（2026-07），之后的动态由 agent 联网查证并标注为参考
 
 ## 记忆系统
 
-默认记忆文件：
-
-```text
-~/.claude/furina-memory.json
+```bash
+node skills/furina/scripts/furina-memory.mjs init
+node skills/furina/scripts/furina-memory.mjs status
+node skills/furina/scripts/furina-memory.mjs inject --query "你好，芙宁娜"
+node skills/furina/scripts/furina-memory.mjs remember --text "[📌 记忆: 用户喜欢枫丹歌剧]"
+node skills/furina/scripts/furina-memory.mjs compress
 ```
 
-共享记忆运行时：
+记忆文件默认在 `~/.claude/furina-memory.json`（可用 `FURINA_MEMORY_PATH` / `--path` 覆盖，与具体 agent 无关）。格式 `version: "2.0"`：亲密度、交互状态、灵魂状态、核心记忆、边界保护与睡眠巩固。完整字段说明见 `skills/furina/references/memory/memory_format.md`。
 
-```text
-scripts/furina-memory.mjs
+## 语气验收
+
+```bash
+node scripts/furina-eval.mjs list
+node scripts/furina-eval.mjs prompt --case 3
+node scripts/furina-eval.mjs batch
+node --test          # 67 条单测：记忆运行时 + 人设内容回归
 ```
-
-常用操作：
-
-```powershell
-node .\scripts\furina-memory.mjs init
-node .\scripts\furina-memory.mjs status
-node .\scripts\furina-memory.mjs inject --query "你好，芙宁娜"
-node .\scripts\furina-memory.mjs remember --text "[📌 记忆: 用户喜欢枫丹歌剧]"
-node .\scripts\furina-memory.mjs compress
-```
-
-记忆格式采用 `version: "2.0"`，包含亲密度、交互状态、灵魂状态、核心记忆、背景笔记和睡眠巩固状态。反思 JSON 中的 `soul_state` 应使用字符串值（`low` / `calm` / `active` / `excited`）；运行时也兼容旧版整数 `0-3` 并会规范化为字符串。记忆条目 ID 会按已有最大 `Mxxx` 稳定递增，避免压缩或删除后因数组位置变化而改号。`type=boundary` 默认按 `priority=3` 保护；高亲密度且气氛合适时，运行时可通过 `recall_mode: "proactive"` 允许少量“顺带想起”的主动回忆。完整字段说明见 [src/memory/memory_format.md](src/memory/memory_format.md) 与 [src/memory/cognitive_memory.md](src/memory/cognitive_memory.md)。
-
-## 外部原神资料补查
-
-回复时的查询优先级：
-
-```
-1. src/prompt/ (角色 Prompt — 人格与语气规范)
-   ↓ 需要芙宁娜相关资料时
-2. furina_resource/ (结构化知识库 — 角色设定、台词、FAQ)
-   ↓ 需要芙宁娜资料库未覆盖的原神内容时
-3. agent 自带的联网搜索 (WebSearch / WebFetch 或等价能力)
-```
-
-仓库不再内置 wiki 检索脚本。`furina_resource/` 未覆盖的剧情、任务、语音或关系细节，由 agent 用自带的联网搜索按需查证：优先权威原神来源，每次只取所需片段，不要整篇塞进上下文，并在回复中标注为参考资料/推断，不要伪装成长期记忆或官方实时事实。
-
-## 目录说明
-
-| 路径 | 内容 |
-|------|------|
-| `.claude/CLAUDE.md` | Claude Code 项目级说明，列出可用 skills 与维护原则 |
-| `.claude/skills/` | Claude Code 原生 project skills |
-| `claudecode/` | 记忆模板与 Claude Code 使用说明；旧 commands 已由原生 skills 替代 |
-| `codex/skills/furina-roleplay/` | 可安装的轻量 Codex Skill；优先路由到仓库 `src/` 与 `furina_resource/`，`references/` 仅作安装后 fallback |
-| `furina_resource/` | 芙宁娜结构化知识库，所有平台共用的唯一资料源 |
-| `src/prompt/` | 角色系统提示词、共享运行时规范、轻量运行提示词、反思提示词；`_shared_runtime.md` 是崩坏梯度、灵魂状态、反应公式和回复分寸的唯一运行时维护点 |
-| `src/rules/` | OOC、安全、角色一致性规则 |
-| `src/memory/` | 记忆格式、认知记忆机制、压缩规则 |
-| `scripts/setup.mjs` | 一键安装器 |
-| `scripts/furina-memory.mjs` | 共享记忆运行时 |
-| `scripts/furina-eval.mjs` | 语气验收辅助脚本 |
-| `scripts/sync-references.mjs` | 将 `src/` 同步到 Codex Skill `references/` fallback |
-| `config/settings.json` | 运行参数、记忆阈值和安全开关的配置说明来源 |
-| `config/manifest.json` | 项目元数据 |
-| `eval/furina_voice_cases.md` | 语气验收用例 |
-| `tests/` | 记忆运行时单元测试 |
-
-## 配置文件
-
-- `config/manifest.json` 是项目元数据清单，供发布、索引或外部工具读取；`scripts/setup.mjs` 不依赖它执行安装。
-- `config/settings.json` 记录建议运行参数、记忆上限、主动回忆阈值、主动投喂阈值、睡眠巩固软目标/硬上限和 OOC 安全开关；`scripts/furina-memory.mjs` 会读取其中的关键记忆阈值，外部运行时也可以把它作为配置来源。
-
-## 知识库索引
-
-| 文件 | 内容 |
-|------|------|
-| `00_index.md` | 资料库索引 |
-| `01_profile.md` | 基础资料 |
-| `02_personality.md` | 性格、人设、表达习惯 |
-| `03_story_timeline.md` | 剧情时间线 |
-| `04_combat_mechanics.md` | 技能与战斗机制 |
-| `05_voice_style.md` | 语气风格、崩坏梯度与生成规则 |
-| `06_relationships.md` | 人物关系 |
-| `07_quotes.md` | 高频台词与破绽句式 |
-| `08_faq.md` | 常见问题答案 |
-| `09_voice_lines.md` | 语音台词整理 |
-| `10_moegirl_supplement.md` | 萌娘百科补充、创作要点与二创边界 |
-| `11_sensitive_topics.md` | 特殊话题安全表：表白亲密度分级（0–10）、凡人失语创伤触发、关系敏感话题分寸 |
 
 ## 资料来源与声明
 
-- `furina_resource/` 的角色资料整理自萌娘百科条目：[芙宁娜·德·枫丹](https://zh.moegirl.org.cn/芙宁娜·德·枫丹)。使用与再分发时请遵守原站著作权声明与页面历史署名要求。
-- 认知记忆系统参考了 [astrbot_plugin_angel_memory](https://github.com/kawayiYokami/astrbot_plugin_angel_memory) 与 [astrbot_plugin_angel_heart](https://github.com/kawayiYokami/astrbot_plugin_angel_heart) 的部分设计思路，并改写为本仓库的轻量 Prompt / Skill 资源形态。
+- 角色资料整理自萌娘百科条目「芙宁娜·德·枫丹」，并经原神WIKI（bwiki）语音页等来源逐字核验。使用与再分发请遵守原站著作权声明。
+- 认知记忆系统参考了 [astrbot_plugin_angel_memory](https://github.com/kawayiYokami/astrbot_plugin_angel_memory) 与 [astrbot_plugin_angel_heart](https://github.com/kawayiYokami/astrbot_plugin_angel_heart) 的部分设计思路。
 - 本项目为同人创作与提示词工程实践。芙宁娜、《原神》及相关角色版权归 miHoYo / HoYoverse 所有。
 
 ## License

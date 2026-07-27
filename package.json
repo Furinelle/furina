@@ -6,7 +6,10 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "description": "Furina roleplay skills and shared memory runtime for Claude Code and Codex.",
+  "description": "Furina de Fontaine roleplay skill (Agent Skills standard) with a shared zero-dependency memory runtime — works with any agent that supports agentskills.io.",
   "repository": "https://github.com/Furinelle/furina",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  }
 }
